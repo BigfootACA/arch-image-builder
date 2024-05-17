@@ -1,0 +1,8 @@
+sysconf:
+  user:
+  - name: arch
+    password: arch
+    groups: wheel
+  - name: root
+    uid: 0
+    password: root

@@ -1,0 +1,8 @@
+sysconf:
+  user:
+  - name: alarm
+    password: alarm
+    groups: wheel
+  - name: root
+    uid: 0
+    password: root

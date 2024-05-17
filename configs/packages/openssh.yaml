@@ -1,0 +1,6 @@
+pacman:
+  install:
+  - openssh
+systemd:
+  enable:
+  - sshd.service

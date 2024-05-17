@@ -1,0 +1,16 @@
+name: AYN Odin 2 in UFS
+target: ${device}-ufs
+arch: aarch64
+image:
+- type: filesystem
+  fstype: ext4
+  size: 8GiB
+  sector: 4096
+  label: ArchLinuxARM
+  mount: /
+  fstab:
+    flags: rw,noatime,utf8,errors=remount-ro
+fstab:
+  dev: partlabel
++also:
+- device/ayn-odin2

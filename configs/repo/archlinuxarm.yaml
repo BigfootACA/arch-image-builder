@@ -1,0 +1,19 @@
+pacman:
+  repo:
+  - name: core
+    priority: 100
+    server: http://mirrors.bfsu.edu.cn/archlinuxarm/${arch}/core
+  - name: extra
+    priority: 110
+    server: https://mirrors.bfsu.edu.cn/archlinuxarm/${arch}/extra
+  - name: alarm
+    priority: 120
+    server: https://mirrors.bfsu.edu.cn/archlinuxarm/${arch}/alarm
+  - name: aur
+    priority: 130
+    server: https://mirrors.bfsu.edu.cn/archlinuxarm/${arch}/aur
+  trust:
+  - builder@archlinuxarm.org
+  install:
+  - core/archlinuxarm-keyring
+  - core/archlinux-keyring

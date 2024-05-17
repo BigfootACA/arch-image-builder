@@ -1,0 +1,16 @@
+filesystem:
+  files:
+  - path: /etc/polkit-1/rules.d/99-wheel.rules
+    mode: 0640
+    content: |
+      polkit.addRule(function(action,subject){
+        if(subject.isInGroup("wheel"))
+          return polkit.Result.YES;
+      });
+  - path: /etc/sudoers.d/wheel
+    mode: 0640
+    content: |
+      %wheel ALL=(ALL:ALL) NOPASSWD: ALL
+pacman:
+  install:
+  - sudo

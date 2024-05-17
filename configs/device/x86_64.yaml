@@ -1,0 +1,10 @@
+name: Generic x86_64 compatible PC
+arch: x86_64
+pacman:
+  install:
+  - linux
+  - fastfetch
++also:
+- os/archlinux
+- packages/openssh
+- packages/systemd-networkd

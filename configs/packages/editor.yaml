@@ -1,0 +1,9 @@
+pacman:
+  install:
+  - nano
+  - less
+sysconf:
+  environments:
+    EDITOR: nano
+    VISUAL: nano
+    PAGER: less

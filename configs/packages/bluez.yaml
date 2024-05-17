@@ -1,0 +1,6 @@
+pacman:
+  install:
+  - bluez
+systemd:
+  enable:
+  - bluetooth.service

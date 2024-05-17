@@ -1,0 +1,15 @@
+platform: qcom
+device_suffix:
+pacman:
+  install:
+  - qbootctl
+  - qrtr
+  - rmtfs
+  - tqftpserv
+  - pd-mapper
+systemd:
+  enable:
+  - rmtfs.service
+  - qrtr-ns.service
+  - pd-mapper.service
+  - tqftpserv.service

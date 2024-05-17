@@ -1,0 +1,10 @@
+pacman:
+  install:
+  - systemd-gadget
+  - dnsmasq
+systemd:
+  disable:
+  - getty@ttyGS0.service
+  - usbgadget-func-acm.service
+  enable:
+  - systemd-networkd.service

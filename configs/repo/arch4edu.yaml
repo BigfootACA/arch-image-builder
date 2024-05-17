@@ -1,0 +1,7 @@
+pacman:
+  repo:
+  - name: arch4edu
+    priority: 800
+    server: https://mirrors.bfsu.edu.cn/arch4edu/${arch}
+  install:
+  - arch4edu/arch4edu-keyring

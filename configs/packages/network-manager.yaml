@@ -1,0 +1,7 @@
+pacman:
+  install:
+  - networkmanager
+systemd:
+  enable:
+  - NetworkManager.service
+  - systemd-resolved.service

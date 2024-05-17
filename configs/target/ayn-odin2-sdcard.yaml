@@ -1,0 +1,77 @@
+name: AYN Odin 2 in SD Card
+target: ${device}-sdcard
+arch: aarch64
+pacman:
+  install:
+  - grub
+  - efibootmgr
+image:
+- type: disk
+  output: sdcard.img
+  layout: gpt
+  size: 6GiB
+  sector: 512
+  partitions:
+  - type: filesystem
+    ptype: efi
+    pname: esp
+    size: 512MiB
+    fsname: ESP
+    fstype: fat32
+    mount: /boot
+    fstab:
+      flags: rw,noatime,utf8,errors=remount-ro
+  - type: filesystem
+    ptype: linux-root-arm64
+    pname: linux
+    fsname: ArchLinuxARM
+    fstype: ext4
+    mount: /
+    grow: yes
+    fstab:
+      boot: yes
+      flags: rw,noatime,discard
+fstab:
+  dev: partlabel
+grub:
+  path: /boot/grub
+  targets:
+  - arm64-efi
+bootloader:
+  timeout: 3
+  method:
+  - grub
+  items:
+  - type: linux
+    default: yes
+    name: Arch Linux ARM for AYN Odin 2
+    path: ${kernel.path}
+    kernel: /${kernel.kernel}
+    initramfs: /${kernel.initramfs}
+    devicetree: /${kernel.devicetree}
+    cmdline: ${@kernel.cmdline} ro quiet splash
+filesystem:
+  files:
+    - path: /boot/LinuxLoader.cfg
+      stage: post-fs
+      content: |
+        [LinuxLoader]
+        Debug = true
+        Target = "Linux"
+        MassStorageLUN = 0
+        DefaultVolUp = "BDS Menu"
+        UsbHostMode = false
+        HypUartEnable = false
+        DisableDisplayHW = true
+        [Linux]
+        Image = "${kernel.kernel}"
+        initrd = "${kernel.initramfs}"
+        devicetree = "${kernel.devicetree}"
+        cmdline = "${@kernel.cmdline}"
+kernel:
+  path: /boot
+  kernel: Image
+  initramfs: initramfs-linux.img
+  devicetree: dtbs/${platform}/${soc}-${device}${device_suffix}.dtb
++also:
+- device/ayn-odin2

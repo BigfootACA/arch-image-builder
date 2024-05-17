@@ -1,0 +1,79 @@
+name: AYN Odin 2
+arch: aarch64
+soc: qcs8550
+device: ayn-odin2
+device_suffix: -hypdtbo
+pacman:
+  install:
+  - wireless-regdb
+  - linux-firmware-ayn-odin2
+  - linux-ayn-odin2-edge
+  - mesa-qcom-git
+  - vulkan-tools
+  - xcb-util-keysyms
+systemd:
+  disable:
+  - rmtfs.service
+filesystem:
+  files:
+  - path: /etc/udev/rules.d/99-${device}.rules
+    content: |
+      SUBSYSTEM=="input", ATTRS{name}=="Ayn Odin2 Gamepad", MODE="0666", ENV{ID_INPUT_MOUSE}="0", ENV{ID_INPUT_JOYSTICK}="1"
+  - path: /etc/systemd/logind.conf.d/power-key-lock.conf
+    content: |
+      [Login]
+      HandlePowerKey=lock
+  - path: /etc/systemd/system.conf.d/show-status.conf
+    content: |
+      [Manager]
+      ShowStatus=yes
+  - path: /etc/systemd/sleep.conf.d/no-suspend.conf
+    content: |
+      [Sleep]
+      AllowSuspend=no
+      AllowHibernation=no
+      AllowSuspendThenHibernate=no
+  - path: /etc/systemd/resolved.conf.d/no-mdns.conf
+    content: |
+      [Resolve]
+      MulticastDNS=no
+      LLMNR=no
+sysconf:
+  chassis: handset
+  environments:
+    __GLX_VENDOR_LIBRARY_NAME: mesa
+    MESA_LOADER_DRIVER_OVERRIDE: zink
+    GALLIUM_DRIVER: zink
+kernel:
+  cmdline:
+  - clk_ignore_unused
+  - pd_ignore_unused
+  - panic=30
+  - loglevel=8
+  - allow_mismatched_32bit_el0
+mkinitcpio:
+  files:
+  - /usr/lib/firmware/qcom/sm8550/ayn/odin2/adsp.mbn
+  - /usr/lib/firmware/qcom/sm8550/ayn/odin2/adsp_dtb.mbn
+  - /usr/lib/firmware/qcom/sm8550/ayn/odin2/cdsp.mbn
+  - /usr/lib/firmware/qcom/sm8550/ayn/odin2/cdsp_dtb.mbn
+  - /usr/lib/firmware/ath12k/WCN7850/hw2.0/amss.bin
+  - /usr/lib/firmware/ath12k/WCN7850/hw2.0/regdb.bin
+  - /usr/lib/firmware/ath12k/WCN7850/hw2.0/board-2.bin
+  - /usr/lib/firmware/ath12k/WCN7850/hw2.0/m3.bin
+  - /usr/lib/firmware/qca/hmtbtfw20.tlv
+  - /usr/lib/firmware/qca/hmtnv20.bin
+  - /usr/lib/firmware/qcom/sm8550/ayn/odin2/a740_zap.mbn
+  - /usr/lib/firmware/qcom/gmu_gen70200.bin
+  - /usr/lib/firmware/qcom/a740_sqe.fw
+  - /usr/lib/firmware/regulatory.db.p7s
+  - /usr/lib/firmware/regulatory.db
++also:
+- os/archlinuxarm
+- repo/archlinuxcn
+- repo/renegade-project
+- device/qcom
+- packages/systemd-gadget
+- packages/openssh
+- packages/editor
+- packages/bluez

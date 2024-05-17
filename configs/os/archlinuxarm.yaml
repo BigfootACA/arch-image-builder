@@ -1,0 +1,11 @@
+pacman:
+  install:
+  - core/base
+sysconf:
+  hosts:
+  - 127.0.0.1 localhost
+  - 127.0.1.1 alarm
+  hostname: alarm
++also:
+- repo/archlinuxarm
+- common/alarm-user

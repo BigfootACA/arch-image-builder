@@ -1,0 +1,39 @@
+locale:
+  enable:
+  - "zh_CN.UTF-8 UTF-8"
+  - "en_US.UTF-8 UTF-8"
+  default: zh_CN.UTF-8
+filesystem:
+  files:
+  - path: /etc/conf.d/wireless-regdom
+    content: |
+      WIRELESS_REGDOM="CN"
+  - path: /etc/systemd/resolved.conf.d/cn-dns.conf
+    content: |
+      [Resolve]
+      DNS=114.114.114.114 119.29.29.29
+      FallbackDNS=114.114.114.114 119.29.29.29
+  - path: /etc/systemd/timesyncd.conf.d/cn-ntp.conf
+    content: |
+      [Time]
+      NTP=cn.ntp.org.cn
+pacman:
+  install:
+  - noto-fonts-cjk
+  - wqy-bitmapfont
+  - wqy-microhei
+  - wqy-microhei-lite
+  - wqy-zenhei
+  - ibus
+  - ibus-libpinyin
+sysconf:
+  environments:
+    GTK_IM_MODULE: ibus
+    QT_IM_MODULE: ibus
+    XMODIFIERS: '@im=ibus'
+    COUNTRY: CN
+    LANG: zh_CN.UTF-8
+    LANGUAGE: zh_CN.UTF-8
+    LC_ALL: zh_CN.UTF-8
+    TZ: Asia/Shanghai
+timezone: Asia/Shanghai

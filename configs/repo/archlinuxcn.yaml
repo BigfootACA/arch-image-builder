@@ -1,0 +1,9 @@
+pacman:
+  repo:
+  - name: archlinuxcn
+    priority: 500
+    server: https://mirrors.bfsu.edu.cn/archlinuxcn/${arch}
+  trust:
+  - farseerfc@archlinux.org
+  install:
+  - archlinuxcn/archlinuxcn-keyring

@@ -1,0 +1,9 @@
+pacman:
+  install:
+  - gnome
+systemd:
+  default: graphical.target
+  enable:
+  - gdm.service
++also:
+- packages/network-manager
