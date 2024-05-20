@@ -7,6 +7,9 @@ log = getLogger(__name__)
 
 
 def install_all(ctx: ArchBuilderContext, pacman: Pacman):
+	"""
+	Install all pacman packages
+	"""
 	packages = ctx.get("pacman.install", [])
 	if len(packages) <= 0: return
 	log.info("installing packages: %s", " ".join(packages))
@@ -14,15 +17,24 @@ def install_all(ctx: ArchBuilderContext, pacman: Pacman):
 
 
 def install_all_keyring(ctx: ArchBuilderContext, pacman: Pacman):
+	"""
+	Install all pacman keyring packages before normal packages
+	"""
 	packages: list[str] = ctx.get("pacman.install", [])
 	if len(packages) <= 0: return
+
+	# find out all keyring packages
 	keyrings = [pkg for pkg in packages if pkg.endswith("-keyring")]
 	if len(keyrings) <= 0: return
+
 	log.info("installing keyrings: %s", " ".join(keyrings))
 	pacman.add_trust_keyring_pkg(keyrings)
 
 
 def uninstall_all(ctx: ArchBuilderContext, pacman: Pacman):
+	"""
+	Remove all specified pacman packages
+	"""
 	packages = ctx.get("pacman.uninstall", [])
 	if len(packages) <= 0: return
 	log.info("uninstalling packages: %s", " ".join(packages))
@@ -30,6 +42,9 @@ def uninstall_all(ctx: ArchBuilderContext, pacman: Pacman):
 
 
 def append_config(ctx: ArchBuilderContext, lines: list[str]):
+	"""
+	Generate basic pacman.conf for rootfs
+	"""
 	lines.append("[options]\n")
 	lines.append("HoldPkg = pacman glibc filesystem\n")
 	lines.append(f"Architecture = {ctx.tgt_arch}\n")
@@ -43,6 +58,9 @@ def append_config(ctx: ArchBuilderContext, lines: list[str]):
 
 
 def gen_config(ctx: ArchBuilderContext, pacman: Pacman):
+	"""
+	Generate full pacman.conf for rootfs
+	"""
 	conf = os.path.join(ctx.get_rootfs(), "etc/pacman.conf")
 	lines: list[str] = []
 	append_config(ctx, lines)
@@ -53,17 +71,30 @@ def gen_config(ctx: ArchBuilderContext, pacman: Pacman):
 
 
 def proc_pacman(ctx: ArchBuilderContext, pacman: Pacman):
+	"""
+	Install or remove packages for rootfs, and generate pacman.conf
+	"""
 	install_all(ctx, pacman)
 	uninstall_all(ctx, pacman)
 	gen_config(ctx, pacman)
 
 
 def proc_pacman_keyring(ctx: ArchBuilderContext, pacman: Pacman):
+	"""
+	Early install keyring packages
+	"""
 	install_all_keyring(ctx, pacman)
 
 
 def trust_all(ctx: ArchBuilderContext, pacman: Pacman):
+	"""
+	Early trust keyring for database and keyring packages
+	"""
 	if not ctx.gpgcheck: return
 	trust = ctx.get("pacman.trust", [])
+
+	# receive all keys now
 	pacman.recv_keys(trust)
+
+	# local sign keys
 	for key in trust: pacman.lsign_key(key)

@@ -4,6 +4,9 @@ from builder.lib import serializable
 
 
 class SerializableEncoder(json.JSONEncoder):
+	"""
+	JSON implement of serializable interface
+	"""
 	def default(self, o):
 		if isinstance(o, UUID):
 			return str(o)

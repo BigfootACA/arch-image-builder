@@ -1,3 +1,4 @@
+# GNOME desktop
 pacman:
   install:
   - gnome
@@ -6,4 +7,5 @@ systemd:
   enable:
   - gdm.service
 +also:
+# Ensure NetworkManager is enabled
 - packages/network-manager

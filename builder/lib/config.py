@@ -12,6 +12,9 @@ class ArchBuilderConfigError(Exception):
 
 
 def _dict_merge(dst: dict, src: dict):
+	"""
+	Merge two dict with override
+	"""
 	for key in src.keys():
 		st = type(src[key])
 		if key in dst and st is type(dst[key]):

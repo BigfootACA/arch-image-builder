@@ -23,10 +23,16 @@ class Area(SerializableDict):
 		}
 
 	def reset(self) -> Self:
+		"""
+		Remove all fields
+		"""
 		self.set(-1, -1, -1)
 		return self
 
 	def from_dict(self, o: dict) -> Self:
+		"""
+		Load all fields from config
+		"""
 		self.reset()
 		if "start" in o: self.start = size_to_bytes(o["start"])
 		if "offset" in o: self.start = size_to_bytes(o["offset"])
@@ -36,6 +42,9 @@ class Area(SerializableDict):
 		return self
 
 	def is_area_in(self, area: Self) -> bool:
+		"""
+		Is another area full in this area
+		"""
 		self.fixup()
 		area.fixup()
 		return (
@@ -45,6 +54,9 @@ class Area(SerializableDict):
 		)
 
 	def fixup(self) -> Self:
+		"""
+		Fill missing fields
+		"""
 		if self.start >= 0 and self.end >= 0 and self.start > self.end + 1:
 			raise ValueError("start large than end")
 		if 0 <= self.end < self.size and self.size >= 0:
@@ -52,17 +64,20 @@ class Area(SerializableDict):
 		if self.start >= 0 and self.end >= 0 and self.size >= 0:
 			if self.size != self.end - self.start + 1:
 				raise ValueError("bad size")
-		elif self.start >= 0 and self.end >= 0:
+		elif self.start >= 0 and self.end >= 0: # need size
 			self.size = self.end - self.start + 1
-		elif self.start >= 0 and self.size >= 0:
+		elif self.start >= 0 and self.size >= 0: # need end
 			self.end = self.start + self.size - 1
-		elif self.end >= 0 and self.size >= 0:
+		elif self.end >= 0 and self.size >= 0: # need start
 			self.start = self.end - self.size + 1
 		else:
 			raise ValueError("missing value")
 		return self
 
 	def __init__(self, start: int = -1, end: int = -1, size: int = -1, area: Self = None):
+		"""
+		Initialize a area
+		"""
 		super().__init__()
 		if area: start, end, size = area.to_tuple()
 		self.start, self.end, self.size = start, end, size
@@ -78,9 +93,15 @@ def to_tuple(start: int = -1, end: int = -1, size: int = -1, area: Area = None) 
 
 class Areas(list[Area], SerializableList):
 	def is_area_in(self, area: Area) -> bool:
+		"""
+		Is an area fully in this areas
+		"""
 		return any(pool.is_area_in(area) for pool in self)
 
 	def merge(self) -> Self:
+		"""
+		Merge all areas
+		"""
 		idx = 0
 		self.sort(key=lambda x: (x.start, x.end))
 		while len(self) > 0:
@@ -91,6 +112,7 @@ class Areas(list[Area], SerializableList):
 			if idx > 0:
 				last = self[idx - 1]
 				if last.end + 1 >= curr.start:
+					# last end equals to this start
 					ent = Area(last.start, curr.end)
 					ent.fixup()
 					self.remove(last)
@@ -108,6 +130,9 @@ class Areas(list[Area], SerializableList):
 		size: int = -1,
 		area: Area = None,
 	) -> Area | None:
+		"""
+		Lookup an area with fields
+		"""
 		start, end, size = to_tuple(start, end, size, area)
 		for area in self:
 			if not (area.start <= start <= area.end): continue
@@ -117,6 +142,9 @@ class Areas(list[Area], SerializableList):
 		return None
 
 	def align(self, align: int) -> Self:
+		"""
+		Align all fields to value
+		"""
 		self.sort(key=lambda x: (x.start, x.end))
 		for area in self:
 			start = round_up(area.start, align)
@@ -136,6 +164,9 @@ class Areas(list[Area], SerializableList):
 		size: int = -1,
 		area: Area = None
 	) -> Area | None:
+		"""
+		Add an area to this areas
+		"""
 		if area: start, end, size = area.to_tuple()
 		cnt = (start >= 0) + (end >= 0) + (size >= 0)
 		if cnt < 2: raise ValueError("missing value")
@@ -151,6 +182,9 @@ class Areas(list[Area], SerializableList):
 		size: int = -1,
 		area: Area = None,
 	) -> bool:
+		"""
+		Remove a range from areas
+		"""
 		start, end, size = to_tuple(start, end, size, area)
 		if len(self) <= 0: return False
 		rs = min(area.start for area in self)
@@ -174,6 +208,9 @@ class Areas(list[Area], SerializableList):
 		area: Area = None,
 		biggest: bool = True,
 	) -> Area | None:
+		"""
+		Find matched area
+		"""
 		if area: start, end, size = area.to_tuple()
 		cnt = (start >= 0) + (end >= 0) + (size >= 0)
 		if cnt >= 2:

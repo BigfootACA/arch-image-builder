@@ -1,3 +1,4 @@
+# Default user for ArchLinux ARM
 sysconf:
   user:
   - name: alarm

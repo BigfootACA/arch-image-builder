@@ -89,6 +89,9 @@ class ArchBuilderContext:
 	group: GroupFile = GroupFile()
 
 	def get(self, key: str, default=None):
+		"""
+		Get config value
+		"""
 		try: return dict_get(key, self.config)
 		except: return default
 
@@ -104,6 +107,9 @@ class ArchBuilderContext:
 		self.cleanup()
 
 	def cleanup(self):
+		"""
+		Cleanup build context
+		"""
 		from builder.build.mount import undo_mounts
 		self.cgroup.kill_all()
 		self.cgroup.destroy()
@@ -139,6 +145,9 @@ class ArchBuilderContext:
 		return ret
 
 	def reload_passwd(self):
+		"""
+		Reload user database
+		"""
 		root = self.get_rootfs()
 		pf = os.path.join(root, "etc/passwd")
 		gf = os.path.join(root, "etc/group")
@@ -148,9 +157,15 @@ class ArchBuilderContext:
 		if os.path.exists(gf): self.group.load_file(gf)
 
 	def finish_config(self):
+		"""
+		Done load configs
+		"""
 		self.config_orig = deepcopy(self.config)
 
 	def resolve_subscript(self):
+		"""
+		Run subscript replaces
+		"""
 		ss = SubScript()
 		self.config = deepcopy(self.config_orig)
 		ss.parse(self.config)

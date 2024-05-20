@@ -1,3 +1,4 @@
+# Bluetooth
 pacman:
   install:
   - bluez

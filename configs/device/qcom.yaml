@@ -2,10 +2,19 @@ platform: qcom
 device_suffix:
 pacman:
   install:
+  # Android A/B Slot Switcher
   - qbootctl
+
+  # Qualcomm IPC Router
   - qrtr
+
+  # Modem remote filesystem
   - rmtfs
+
+  # TFTP via Qualcomm IPC Router
   - tqftpserv
+
+  # Protection Domain Mapper
   - pd-mapper
 systemd:
   enable:

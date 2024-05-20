@@ -1,5 +1,7 @@
+# Users in wheel group can run root commands without password
 filesystem:
   files:
+  # polkit
   - path: /etc/polkit-1/rules.d/99-wheel.rules
     mode: 0640
     content: |
@@ -7,10 +9,12 @@ filesystem:
         if(subject.isInGroup("wheel"))
           return polkit.Result.YES;
       });
+  # sudo
   - path: /etc/sudoers.d/wheel
     mode: 0640
     content: |
       %wheel ALL=(ALL:ALL) NOPASSWD: ALL
+# Ensure sudo is installed
 pacman:
   install:
   - sudo

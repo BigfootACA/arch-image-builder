@@ -1,10 +1,13 @@
+# USB Gadget tools
 pacman:
   install:
   - systemd-gadget
   - dnsmasq
 systemd:
   disable:
+  # Disable tty ACM to avoid bugs
   - getty@ttyGS0.service
   - usbgadget-func-acm.service
   enable:
+  # Enable systemd-networkd for RNDIS
   - systemd-networkd.service

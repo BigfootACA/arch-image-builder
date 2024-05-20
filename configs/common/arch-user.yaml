@@ -1,3 +1,4 @@
+# Default user for ArchLinux
 sysconf:
   user:
   - name: arch

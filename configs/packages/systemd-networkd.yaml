@@ -1,5 +1,6 @@
 filesystem:
   files:
+    # Network configs from archiso
     - path: /etc/systemd/network/20-ethernet.network
       content: |
         [Match]

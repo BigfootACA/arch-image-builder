@@ -7,6 +7,9 @@ log = getLogger(__name__)
 
 
 def gen_machine_info(ctx: ArchBuilderContext):
+	"""
+	Generate /etc/machine-info for systemd
+	"""
 	root = ctx.get_rootfs()
 	file = os.path.join(root, "etc/machine-info")
 	cfg = ctx.get("sysconf")
@@ -22,6 +25,9 @@ def gen_machine_info(ctx: ArchBuilderContext):
 
 
 def gen_hosts(ctx: ArchBuilderContext):
+	"""
+	Generate /etc/hosts
+	"""
 	addrs: list[str] = []
 	root = ctx.get_rootfs()
 	file = os.path.join(root, "etc/hosts")
@@ -33,6 +39,8 @@ def gen_hosts(ctx: ArchBuilderContext):
 			addrs.append(s[0])
 			f.write(addr)
 			f.write(os.linesep)
+
+		# 127.0.1.1 not set, add for FQDN
 		name = ctx.get("sysconf.hostname")
 		if "127.0.1.1" not in addrs and name:
 			f.write(f"127.0.1.1 {name}\n")
@@ -40,6 +48,9 @@ def gen_hosts(ctx: ArchBuilderContext):
 
 
 def gen_hostname(ctx: ArchBuilderContext):
+	"""
+	Generate /etc/hostname
+	"""
 	root = ctx.get_rootfs()
 	file = os.path.join(root, "etc/hostname")
 	name = ctx.get("sysconf.hostname")
@@ -51,6 +62,9 @@ def gen_hostname(ctx: ArchBuilderContext):
 
 
 def gen_environments(ctx: ArchBuilderContext):
+	"""
+	Generate /etc/environments
+	"""
 	root = ctx.get_rootfs()
 	file = os.path.join(root, "etc/environment")
 	envs: dict[str] = ctx.get("sysconf.environments", [])
@@ -62,6 +76,9 @@ def gen_environments(ctx: ArchBuilderContext):
 
 
 def proc_names(ctx: ArchBuilderContext):
+	"""
+	Apply names for system configs
+	"""
 	gen_machine_info(ctx)
 	gen_environments(ctx)
 	gen_hostname(ctx)

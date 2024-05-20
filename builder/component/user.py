@@ -62,9 +62,13 @@ def parse_user_from(
 	node: dict,
 	default: tuple[int, int] = (0, -1)
 ) -> tuple[int, int]:
-	if "owner" in node: return parse_owner(ctx, node["owner"])
-	uid = parse_usergroup_from(ctx, node, False, default[0])
-	gid = parse_usergroup_from(ctx, node, True, default[1])
+	"""
+	Parse user/group id from config
+	"""
+	uid, gid = default
+	if "owner" in node: uid, gid = parse_owner(ctx, node["owner"])
+	uid = parse_usergroup_from(ctx, node, False, uid)
+	gid = parse_usergroup_from(ctx, node, True, gid)
 	if gid == -1:
 		user = ctx.passwd.lookup_uid(uid)
 		if user is None: raise ArchBuilderConfigError(

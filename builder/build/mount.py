@@ -82,9 +82,11 @@ def init_mount(ctx: ArchBuilderContext):
 		real = os.path.realpath(os.path.join(root, target))
 		do_mount(ctx, source, real, fstype, options)
 	try:
+		# ensure mount point is clean
 		mnts = MountTab.parse_mounts()
 		if any(mnts.find_folder(ctx.work)):
 			raise RuntimeError("mount points not cleanup")
+
 		root_mount("proc", "proc", "proc", "nosuid,noexec,nodev")
 		root_mount("sys", "sys", "sysfs", "nosuid,noexec,nodev,ro")
 		root_mount("dev", "dev", "devtmpfs", "mode=0755,nosuid")
@@ -92,6 +94,8 @@ def init_mount(ctx: ArchBuilderContext):
 		root_mount("shm", "dev/shm", "tmpfs", "mode=1777,nosuid,nodev")
 		root_mount("run", "run", "tmpfs", "nosuid,nodev,mode=0755")
 		root_mount("tmp", "tmp", "tmpfs", "mode=1777,strictatime,nodev,nosuid")
+
+		# symbolic links for some script tools (e.g. mkinitcpio)
 		symlink("/proc/self/fd", "dev", "fd")
 		symlink("/proc/self/fd/0", "dev", "stdin")
 		symlink("/proc/self/fd/1", "dev", "stdout")

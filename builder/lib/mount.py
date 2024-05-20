@@ -4,7 +4,7 @@ import libmount
 from typing import Self
 from logging import getLogger
 from builder.lib.blkid import Blkid
-from builder.lib.serializable import SerializableDict,SerializableList
+from builder.lib.serializable import SerializableDict, SerializableList
 log = getLogger(__name__)
 
 virtual_fs = [
@@ -33,6 +33,9 @@ class MountPoint(SerializableDict):
 
 	@property
 	def virtual(self) -> bool:
+		"""
+		Is current mount point a virtual filesystem
+		"""
 		if self.fstype:
 			if self.fstype in virtual_fs: return True
 			if self.fstype in real_fs: return False
@@ -45,6 +48,12 @@ class MountPoint(SerializableDict):
 
 	@property
 	def level(self) -> int:
+		"""
+		Get current target levels
+		/ => 1
+		/boot => 2
+		/usr/bin => 3
+		"""
 		if self.target is None: return 0
 		path = os.path.realpath(self.target)
 		cnt = path.count(os.sep)
@@ -56,13 +65,22 @@ class MountPoint(SerializableDict):
 
 	@property
 	def options(self):
+		"""
+		Get options as string
+		"""
 		return ",".join(self.option)
 
 	@options.setter
 	def options(self, val: str):
+		"""
+		Set options from string
+		"""
 		self.option = val.split(",")
 
 	def get_option(self, opt: str) -> str | None:
+		"""
+		Get an option from string
+		"""
 		if opt in self.option:
 			return opt
 		if "=" not in opt:
@@ -72,6 +90,9 @@ class MountPoint(SerializableDict):
 		return None
 
 	def remove_option(self, opt: str | list[str]) -> Self:
+		"""
+		Remove an option
+		"""
 		if type(opt) is list[str]:
 			for o in opt:
 				self.remove_option(o)
@@ -86,11 +107,17 @@ class MountPoint(SerializableDict):
 		return self
 
 	def exclusive_option(self, opt: str, opt1: str, opt2: str) -> Self:
+		"""
+		Remove a exclusive option
+		"""
 		if opt == opt1 or opt == opt2:
 			self.remove_option(opt1)
 		return self
 
 	def add_option(self, opt: str) -> Self:
+		"""
+		Add an option
+		"""
 		self.exclusive_option(opt, "ro", "rw")
 		self.exclusive_option(opt, "dev", "nodev")
 		self.exclusive_option(opt, "suid", "nosuid")
@@ -102,10 +129,16 @@ class MountPoint(SerializableDict):
 		return self
 
 	def ro(self) -> Self:
+		"""
+		Set mount point to read-only
+		"""
 		self.add_option("ro")
 		return self
 
 	def rw(self) -> Self:
+		"""
+		Set mount point to read-write
+		"""
 		self.add_option("rw")
 		return self
 
@@ -115,6 +148,9 @@ class MountPoint(SerializableDict):
 	def have_options(self) -> bool: return len(self.option) > 0
 
 	def update_device(self):
+		"""
+		Update device field from source
+		"""
 		if self.virtual or self.source is None: return
 		if self.source.startswith(os.sep):
 			self.device = self.source
@@ -124,6 +160,9 @@ class MountPoint(SerializableDict):
 			return
 
 	def persist_source(self, tag: str = "UUID"):
+		"""
+		Change source to persist source
+		"""
 		if self.virtual: return
 		if self.device is None: self.update_device()
 		if self.device is None: return
@@ -136,6 +175,9 @@ class MountPoint(SerializableDict):
 		)
 
 	def tolibmount(self) -> libmount.Context:
+		"""
+		To util-linux libmount context
+		"""
 		mnt = libmount.Context()
 		mnt.target = self.target
 		if self.have_source(): mnt.source = self.source
@@ -144,9 +186,15 @@ class MountPoint(SerializableDict):
 		return mnt
 
 	def ismount(self) -> bool:
+		"""
+		Is current mount point mounted
+		"""
 		return os.path.ismount(self.target)
 
 	def mount(self) -> Self:
+		"""
+		Mount now
+		"""
 		if not os.path.exists(self.target):
 			os.makedirs(self.target, mode=0o0755)
 		if not os.path.ismount(self.target):
@@ -161,6 +209,9 @@ class MountPoint(SerializableDict):
 		return self
 
 	def umount(self) -> Self:
+		"""
+		UnMount now
+		"""
 		if os.path.ismount(self.target):
 			lib = self.tolibmount()
 			lib.umount()
@@ -168,6 +219,9 @@ class MountPoint(SerializableDict):
 		return self
 
 	def from_mount_line(self, line: str) -> Self:
+		"""
+		Load from mtab / fstab
+		"""
 		d = line.split()
 		if len(d) != 6:
 			raise ValueError("bad mount line")
@@ -180,6 +234,10 @@ class MountPoint(SerializableDict):
 		return self
 
 	def to_mount_line(self) -> str:
+		"""
+		To mount tab line string
+		PARTLABEL=
+		"""
 		self.fixup()
 		fields = [
 			self.source,
@@ -246,6 +304,9 @@ class MountPoint(SerializableDict):
 
 class MountTab(list[MountPoint], SerializableList):
 	def find_folder(self, folder: str) -> Self:
+		"""
+		Find mount point target starts with folder
+		"""
 		root = os.path.realpath(folder)
 		return [mnt for mnt in self if mnt.target.startswith(root)]
 
@@ -254,12 +315,18 @@ class MountTab(list[MountPoint], SerializableList):
 	def find_fstype(self, fstype: str) -> Self: return [mnt for mnt in self if mnt.fstype == fstype]
 
 	def clone(self) -> Self:
+		"""
+		Fully clone a MountTab
+		"""
 		mnts = MountTab()
 		for mnt in self:
 			mnts.append(mnt.clone())
 		return mnts
 
 	def mount_all(self, prefix: str = None, mkdir: bool = False) -> Self:
+		"""
+		Mount all mount points
+		"""
 		for mnt in self:
 			m = mnt.clone()
 			if prefix:
@@ -271,9 +338,15 @@ class MountTab(list[MountPoint], SerializableList):
 		return self
 
 	def resort(self):
+		"""
+		Sort mount points by path level
+		"""
 		self.sort(key=lambda x: (x.level, len(x.target), x.target))
 
 	def strip_virtual(self) -> Self:
+		"""
+		Remove all virtual filesystem mount points
+		"""
 		for mnt in self:
 			if mnt.virtual:
 				self.remove(mnt)
@@ -288,6 +361,9 @@ class MountTab(list[MountPoint], SerializableList):
 		return self
 
 	def to_mount_file(self, linesep=os.linesep) -> str:
+		"""
+		Convert to mount file (fstab)
+		"""
 		ret = "# Source Target FS-Type Options FS-Freq FS-Dump"
 		ret += linesep
 		for point in self:

@@ -2,20 +2,36 @@ name: AYN Odin 2
 arch: aarch64
 soc: qcs8550
 device: ayn-odin2
+
+# hypdtbo for platform ABL boot
 device_suffix: -hypdtbo
 pacman:
   install:
+
+  # For regulatory.db
   - wireless-regdb
+
+  # Qualcomm firmwares for AYN Odin2
   - linux-firmware-ayn-odin2
+
+  # Mainline kernel for AYN Odin2
   - linux-ayn-odin2-edge
+
+  # Adreno 740 GPU
   - mesa-qcom-git
+
+  # Vulkan test tools
   - vulkan-tools
+
+  # Vulkan dependency
   - xcb-util-keysyms
 systemd:
   disable:
+  # No modem in this device
   - rmtfs.service
 filesystem:
   files:
+  # GamePAD workaround
   - path: /etc/udev/rules.d/99-${device}.rules
     content: |
       SUBSYSTEM=="input", ATTRS{name}=="Ayn Odin2 Gamepad", MODE="0666", ENV{ID_INPUT_MOUSE}="0", ENV{ID_INPUT_JOYSTICK}="1"
@@ -41,6 +57,7 @@ filesystem:
 sysconf:
   chassis: handset
   environments:
+    # Force to use zink driver for OpenGL
     __GLX_VENDOR_LIBRARY_NAME: mesa
     MESA_LOADER_DRIVER_OVERRIDE: zink
     GALLIUM_DRIVER: zink
@@ -53,6 +70,8 @@ kernel:
   - allow_mismatched_32bit_el0
 mkinitcpio:
   files:
+  # Put these firmware to initramfs for boot
+  # TODO: do not put they into initramfs
   - /usr/lib/firmware/qcom/sm8550/ayn/odin2/adsp.mbn
   - /usr/lib/firmware/qcom/sm8550/ayn/odin2/adsp_dtb.mbn
   - /usr/lib/firmware/qcom/sm8550/ayn/odin2/cdsp.mbn
@@ -72,8 +91,18 @@ mkinitcpio:
 - os/archlinuxarm
 - repo/archlinuxcn
 - repo/renegade-project
+
+# Generic qualcomm related config
 - device/qcom
+
+# USB Gadget tools
 - packages/systemd-gadget
+
+# OpenSSH Server
 - packages/openssh
+
+# Text editor
 - packages/editor
+
+# Bluetooth related services
 - packages/bluez

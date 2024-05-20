@@ -4,10 +4,16 @@ from builder.lib.serializable import SerializableDict, SerializableList
 
 
 def zero2empty(num: int) -> str:
-	return str(num) if num !=0 else ""
+	"""
+	Convert number to string, when zero return empty
+	"""
+	return str(num) if num != 0 else ""
 
 
 def none2empty(val: str) -> str:
+	"""
+	Return a string, when None return empty
+	"""
 	return val if val else ""
 
 
@@ -25,6 +31,9 @@ class UserFile(SerializableList):
 	def unload(self): pass
 
 	def load_str(self, content: str | list[str]) -> Self:
+		"""
+		Load whole file as string
+		"""
 		if type(content) is str: 
 			content = content.split("\n")
 		for line in content:
