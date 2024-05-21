@@ -3,14 +3,27 @@ target: ${device}-ufs
 arch: aarch64
 image:
 - type: filesystem
+  output: rootfs.img
   fstype: ext4
+  fsname: ArchLinuxARM
   size: 8GiB
   sector: 4096
-  label: ArchLinuxARM
   mount: /
   fstab:
-    flags: rw,noatime,utf8,errors=remount-ro
+    boot: yes
+    flags: rw,noatime,discard
+- type: aboot
+  output: boot.img
+  size: 64MiB
+  sector: 4096
+  image-gzip-dtb: yes
+  header-version: 1
+  kernel-offset: 0x8000
+  ramdisk-offset: 0x1000000
+  tags-offset: 0x100
+  os-version: 13.0.0
+  os-patch-level: 2023-05
 fstab:
-  dev: partlabel
+  dev: uuid
 +also:
 - device/ayn-odin2
