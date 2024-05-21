@@ -7,6 +7,7 @@ from builder.build import locale, systemd, mkinitcpio, names
 from builder.build import pacman as pacman_build
 from builder.component import pacman as pacman_comp
 from builder.lib.context import ArchBuilderContext
+from builder.lib.mount import MountTab
 log = getLogger(__name__)
 
 
@@ -51,11 +52,26 @@ def do_copy(ctx: ArchBuilderContext, src: str, dst: str):
 	if ret != 0: raise OSError("rsync failed")
 
 
+def remove_workspace(ctx: ArchBuilderContext):
+	# ensure mount point is clean
+	mnts = MountTab.parse_mounts()
+	if any(mnts.find_folder(ctx.work)):
+		raise RuntimeError("mount points not cleanup")
+
+	# DANGEROUS: fully remove workspace
+	log.info(f"cleaning workspace {ctx.work}")
+	shutil.rmtree(ctx.work)
+
+
 def build_rootfs(ctx: ArchBuilderContext):
 	"""
 	Build whole rootfs and generate image
 	"""
 	log.info("building rootfs")
+
+	# clean workspace
+	if ctx.clean and os.path.exists(ctx.work):
+		remove_workspace(ctx)
 
 	# create folders
 	os.makedirs(ctx.work, mode=0o755, exist_ok=True)

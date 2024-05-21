@@ -44,6 +44,11 @@ class ArchBuilderContext:
 	repack: bool = False
 
 	"""
+	Clean workspace before rebuild
+	"""
+	clean: bool = False
+
+	"""
 	Top tree folder
 	"""
 	dir: str = None

@@ -15,6 +15,7 @@ def parse_arguments(ctx: ArchBuilderContext):
 		prog="arch-image-builder",
 		description="Build flashable image for Arch Linux",
 	)
+	parser.add_argument("-C", "--clean",       help="Clean workspace before build", default=False, action='store_true')
 	parser.add_argument("-p", "--preset",      help="Select preset to create package")
 	parser.add_argument("-c", "--config",      help="Select config to build", action='append')
 	parser.add_argument("-o", "--workspace",   help="Set workspace for builder", default=ctx.work)
@@ -30,6 +31,7 @@ def parse_arguments(ctx: ArchBuilderContext):
 
 	if args.no_gpgcheck: ctx.gpgcheck = False
 	if args.repack: ctx.repack = True
+	if args.clean: ctx.clean = True
 
 	# collect configs path
 	configs = []

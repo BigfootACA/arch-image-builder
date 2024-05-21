@@ -30,6 +30,7 @@ python build.py -c target/ayn-odin2-sdcard,locale/zh-cn,desktop/gnome
 
 | Option                              | Description                      |
 |-------------------------------------|----------------------------------|
+| -C, --clean                         | Clean workspace before build     |
 | -p PRESET, --preset PRESET          | Select preset to create package  |
 | -c CONFIG, --config CONFIG          | Select configs to build          |
 | -o WORKSPACE, --workspace WORKSPACE | Set workspace for builder        |
