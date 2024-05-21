@@ -114,7 +114,7 @@ def add_file(ctx: ArchBuilderContext, file: dict):
 		content: str = file["content"]
 		log.debug(
 			"write to %s with %s",
-			(real, content.strip())
+			real, content.strip()
 		)
 		f.write(content.encode(encode))
 	log.debug(f"chmod file {real} to {mode:04o}")
