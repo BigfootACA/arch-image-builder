@@ -68,6 +68,10 @@ kernel:
   - panic=30
   - loglevel=8
   - allow_mismatched_32bit_el0
+  path: /boot
+  kernel: Image
+  initramfs: initramfs-linux.img
+  devicetree: dtbs/${platform}/${soc}-${device}${device_suffix}.dtb
 mkinitcpio:
   files:
   # Put these firmware to initramfs for boot
