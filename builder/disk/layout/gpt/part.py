@@ -2,15 +2,20 @@ from uuid import UUID
 from logging import getLogger
 from builder.disk.layout.layout import DiskLayout, DiskPart
 from builder.disk.layout.gpt.struct import EfiPartEntry
+from builder.disk.layout.mbr.struct import MbrPartEntry
 from builder.disk.layout.gpt.types import DiskTypesGPT
+from builder.disk.layout.mbr.types import DiskTypesMBR
 from builder.disk.layout.gpt.uefi import EfiGUID
 log = getLogger(__name__)
 
 
 class DiskPartGPT(DiskPart):
 	layout: DiskLayout
+	mbr_type: int
 	type_uuid: UUID
+	bootable: bool
 	uuid: UUID
+	hybrid: bool
 	idx: int
 	_part_name: str
 	_attributes: int
@@ -40,6 +45,10 @@ class DiskPartGPT(DiskPart):
 		tid = DiskTypesGPT.lookup_one_uuid(val)
 		if tid is None: raise ValueError(f"unknown type {val}")
 		self.type_uuid = tid
+		if self.hybrid:
+			tid = DiskTypesMBR.lookup_one_id(val)
+			if tid is None: raise ValueError(f"unknown type {val}")
+			self.mbr_type = tid
 
 	@property
 	def start_lba(self) -> int:
@@ -99,6 +108,14 @@ class DiskPartGPT(DiskPart):
 		part.set_part_name(self.part_name)
 		return part
 
+	def to_mbr_entry(self) -> MbrPartEntry:
+		part = MbrPartEntry()
+		part.set_bootable(self.bootable)
+		part.set_type(self.mbr_type)
+		part.set_start_lba(self.start_lba)
+		part.set_size_lba(self.size_lba)
+		return part
+
 	def __init__(
 		self,
 		layout: DiskLayout,
@@ -108,7 +125,10 @@ class DiskPartGPT(DiskPart):
 		super().__init__()
 		self.layout = layout
 		self.idx = idx
+		self.hybrid = False
+		self.bootable = False
 		self.part_name = None
+		self.mbr_type = 0
 		self.start_lba = 0
 		self.end_lba = 0
 		self.attributes = 0

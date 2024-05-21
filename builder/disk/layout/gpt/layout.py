@@ -100,6 +100,10 @@ class DiskLayoutGPT(DiskLayout):
 		puuid = UUID(config["puuid"]) if "puuid" in config else None
 		part = self.add_partition(ptype, area=area, name=pname, uuid=puuid)
 		if part:
+			if "hybrid" in config:
+				part.hybrid = True
+			if "bootable" in config:
+				part.bootable = True
 			if "attributes" in config:
 				part.attributes = config["attributes"]
 		return part
@@ -248,13 +252,20 @@ class DiskLayoutGPT(DiskLayout):
 			size = MasterBootRecord.boot_code.size
 			code = bytes_pad(self.boot_code, size, trunc=True)
 			ctypes.memmove(new_pmbr.boot_code, code, size)
+		idx = 0
+		for part in self.partitions:
+			if not part.hybrid: continue
+			if idx >= 3: raise RuntimeError("Hybrid partition to many")
+			ppart = part.to_mbr_entry()
+			new_pmbr.partitions[idx] = ppart
+			idx += 1
 		ppart = MbrPartEntry()
 		ppart.start_lba = 1
 		ppart.size_lba = self.total_lba - 1
 		ppart.start_head, ppart.start_track, ppart.start_sector = 0, 0, 2
 		ppart.end_head, ppart.end_track, ppart.end_sector = 255, 255, 255
 		ppart.set_type("gpt")
-		new_pmbr.partitions[0] = ppart
+		new_pmbr.partitions[idx] = ppart
 		return new_pmbr
 
 	def create_gpt_entries(self) -> bytes:
