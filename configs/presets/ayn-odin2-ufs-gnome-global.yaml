@@ -1,0 +1,5 @@
+package:
+  file: ArchLinuxARM-AYN-Odin2-UFS-GNOME-Global-${version}.7z
+  configs:
+  - target/ayn-odin2-ufs
+  - desktop/gnome

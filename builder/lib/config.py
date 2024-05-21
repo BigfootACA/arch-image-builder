@@ -105,3 +105,14 @@ def load_configs(ctx: ArchBuilderContext, configs: list[str]):
 		if ctx.config is None:
 			raise ArchBuilderConfigError("no any config loaded")
 	log.debug(f"loaded {loaded} configs")
+
+
+def load_preset(ctx: ArchBuilderContext, preset: str):
+	file = preset
+	if not preset.startswith("/"):
+		file = "presets/" + preset
+	ctx.preset = True
+	load_configs(ctx, [file])
+	if "package" not in ctx.config:
+		raise ArchBuilderConfigError("bad preset config")
+	log.info(f"loaded preset {preset}")

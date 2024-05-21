@@ -1,5 +1,6 @@
 import os
 from copy import deepcopy
+from datetime import datetime
 from subprocess import Popen, PIPE
 from logging import getLogger
 from builder.lib.cpu import cpu_arch_get
@@ -88,6 +89,16 @@ class ArchBuilderContext:
 	passwd: PasswdFile = PasswdFile()
 	group: GroupFile = GroupFile()
 
+	"""
+	Use a preset to build package
+	"""
+	preset: bool = False
+
+	"""
+	Package version
+	"""
+	version: str = datetime.now().strftime('%Y%m%d%H%M%S')
+
 	def get(self, key: str, default=None):
 		"""
 		Get config value
@@ -101,7 +112,9 @@ class ArchBuilderContext:
 
 	def __init__(self):
 		self.cgroup = CGroup("arch-image-builder")
-		self.cgroup.create()
+		self.config["version"] = self.version
+		try: self.cgroup.create()
+		except: log.warning("failed to create cgroup", exc_info=1)
 
 	def __deinit__(self):
 		self.cleanup()

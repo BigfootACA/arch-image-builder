@@ -1,0 +1,6 @@
+package:
+  file: ArchLinuxARM-AYN-Odin2-SDCard-GNOME-zh_CN-${version}.7z
+  configs:
+  - target/ayn-odin2-sdcard
+  - locale/zh-cn
+  - desktop/gnome

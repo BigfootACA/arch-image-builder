@@ -11,7 +11,7 @@ Currently only support Arch based distros
 Install required packages
 
 ```commandline
-pacman -S rsync pyalpm python-yaml python-libarchive-c
+pacman -S p7zip rsync pyalpm python-yaml python-libarchive-c
 ```
 
 For cross build (UNTESTED)
@@ -28,13 +28,14 @@ python build.py -c target/ayn-odin2-sdcard,locale/zh-cn,desktop/gnome
 
 ## Options
 
-| Option                              | Description               |
-|-------------------------------------|---------------------------|
-| -c CONFIG, --config CONFIG          | Select configs to build   |
-| -o WORKSPACE, --workspace WORKSPACE | Set workspace for builder |
-| -d, --debug                         | Enable debug logging      |
-| -G, --no-gpgcheck                   | Disable GPG check         |
-| -r, --repack                        | Repack rootfs only        |
+| Option                              | Description                      |
+|-------------------------------------|----------------------------------|
+| -p PRESET, --preset PRESET          | Select preset to create package  |
+| -c CONFIG, --config CONFIG          | Select configs to build          |
+| -o WORKSPACE, --workspace WORKSPACE | Set workspace for builder        |
+| -d, --debug                         | Enable debug logging             |
+| -G, --no-gpgcheck                   | Disable GPG check                |
+| -r, --repack                        | Repack rootfs only               |
 
 ## License
 
