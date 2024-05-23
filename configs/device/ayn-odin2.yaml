@@ -29,6 +29,9 @@ systemd:
   disable:
   # No modem in this device
   - rmtfs.service
+  enable:
+  - bt-update-mac.service
+  - net-update-mac@wlp1s0.service
 filesystem:
   files:
   # GamePAD workaround
@@ -114,6 +117,9 @@ mkinitcpio:
 
 # Bluetooth related services
 - packages/bluez
+
+# Persistent MAC Address
+- common/persistent-mac
 
 # Root without password
 - common/wheel-nopasswd
