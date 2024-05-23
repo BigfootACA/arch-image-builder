@@ -114,3 +114,6 @@ mkinitcpio:
 
 # Bluetooth related services
 - packages/bluez
+
+# Root without password
+- common/wheel-nopasswd
