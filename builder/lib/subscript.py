@@ -81,8 +81,9 @@ class SubScript:
 		while last < len(content):
 			last = content.find("$", last)
 			if last < 0: break
-			if content[last:last+2] == "$$":
-				last += 2
+			if content[last:last + 2] == "$$":
+				content = content[:last] + content[last + 1:]
+				last += 1
 				continue
 			if len(content) <= last + 2 or content[last + 1] != "{":
 				raise ValueError(f"unexpected token in subscript at {lvl}")
