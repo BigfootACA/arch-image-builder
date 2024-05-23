@@ -19,6 +19,11 @@ class FileSystemBuilder(ImageContentBuilder):
 
 	def proc_cmdline_root(self, cfg: dict, mnt: MountPoint):
 		ccfg = self.builder.ctx.config_orig
+		mnt.remove_option("ro")
+		mnt.remove_option("rw")
+		for opt in mnt.option:
+			if opt.startswith("x-"):
+				mnt.option.remove(opt)
 		if "kernel" not in ccfg: ccfg["kernel"] = {}
 		kern = ccfg["kernel"]
 		if "cmdline" not in kern: kern["cmdline"] = []
@@ -27,12 +32,16 @@ class FileSystemBuilder(ImageContentBuilder):
 			raise ArchBuilderConfigError("root already set in cmdline")
 		if mnt.target != "/":
 			log.warning(f"root target is not / ({mnt.target})")
+		if not mnt.source.startswith("/") and "=" not in mnt.source:
+			log.warning(f"bad root source ({mnt.source})")
 		ecmds = [
 			"ro", "rootwait",
 			f"root={mnt.source}",
-			f"rootfstype={mnt.fstype}",
-			f"rootflags={mnt.options}",
 		]
+		if mnt.fstype != "none":
+			ecmds.append(f"rootfstype={mnt.fstype}")
+		if len(mnt.option) > 0:
+			ecmds.append(f"rootflags={mnt.options}")
 		scmds = " ".join(ecmds)
 		log.debug(f"add root cmdline {scmds}")
 		cmds.extend(ecmds)
@@ -113,7 +122,7 @@ class FileSystemBuilder(ImageContentBuilder):
 		self.builder.ctx.fstab.append(mnt)
 		self.builder.ctx.fsmap[mnt.source] = self.builder.device
 		if "boot" in fstab and fstab["boot"]:
-			self.proc_cmdline_root(cfg, mnt)
+			self.proc_cmdline_root(cfg, mnt.clone())
 
 	def format(self, fstype: str):
 		from builder.disk.filesystem.creator import FileSystemCreators
