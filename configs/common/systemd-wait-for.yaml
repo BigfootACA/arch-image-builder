@@ -1,0 +1,80 @@
+filesystem:
+  files:
+  - path: /etc/systemd/system/wait-addresses@.service
+    content: |
+      [Unit]
+      Description=Wait for addresses %i
+      [Service]
+      Type=oneshot
+      ExecStart=bash /etc/systemd/scripts/wait-addresses.sh %i 60
+      SyslogIdentifier=wait-addresses
+      [Install]
+      WantedBy=network-online.target
+  - path: /etc/systemd/system/wait-interface@.service
+    content: |
+      [Unit]
+      Description=Wait for interface %i
+      [Service]
+      Type=oneshot
+      ExecStart=bash /etc/systemd/scripts/wait-interface.sh %i 60
+      SyslogIdentifier=wait-interface
+      [Install]
+      WantedBy=network-online.target
+  - path: /etc/systemd/system/wait-reached@.service
+    content: |
+      [Unit]
+      Description=Wait for reached %i
+      After=network-online.target
+      [Service]
+      Type=oneshot
+      ExecStart=bash /etc/systemd/scripts/wait-reached.sh %i 60
+      SyslogIdentifier=wait-reached
+      [Install]
+      WantedBy=network-online.target
+  - path: /etc/systemd/scripts/wait-addresses.sh 
+    content: |
+      #!/usr/bin/bash
+      address="$${1}"
+      timeout="$${2}"
+      [ -z "$${address}" ]&&exit 2
+      [ -z "$${timeout}" ]&&timeout=10
+      [[ "$${timeout}" -lt 0 ]]&&exit 2
+      int=0
+      timeout=$$((timeout*5))
+      while ! ip address show | grep -w "$${address}" &>/dev/null; do
+        int=$$((int+1))
+        [[ "$${int}" -gt "$${timeout}" ]]&&exit 1
+        sleep 0.2
+      done
+      true
+  - path: /etc/systemd/scripts/wait-interface.sh
+    content: |
+      #!/usr/bin/bash
+      interface="$${1}"
+      timeout="$${2}"
+      [ -z "$${interface}" ]&&exit 2
+      [ -z "$${timeout}" ]&&timeout=10
+      [[ "$${timeout}" -lt 0 ]]&&exit 2
+      int=0
+      timeout=$$((timeout*5))
+      while ! [ -h "/sys/class/net/$${interface}" ]; do
+        int=$$((int+1))
+        [[ "$${int}" -gt "$${timeout}" ]]&&exit 1
+        sleep 0.2
+      done
+      true
+  - path: /etc/systemd/scripts/wait-reached.sh
+    content: |
+      #!/usr/bin/bash
+      address="$${1}"
+      stimeout="$${2}"
+      [ -z "$${address}" ]&&exit 2
+      [ -z "$${stimeout}" ]&&stimeout=10
+      [[ "$${stimeout}" -lt 0 ]]&&exit 2
+      int=0
+      while ! timeout 1s ping -c 1 -W 1 "$${address}" &>/dev/null; do
+      int=$$((int+1))
+        [[ "$${int}" -gt "$${stimeout}" ]]&&exit 1
+        sleep 0.5
+      done
+      true
