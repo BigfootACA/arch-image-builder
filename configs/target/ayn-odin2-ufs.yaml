@@ -9,6 +9,7 @@ image:
   size: 8GiB
   sector: 4096
   mount: /
+  grow: yes
   fstab:
     boot: yes
     flags: rw,noatime,discard
