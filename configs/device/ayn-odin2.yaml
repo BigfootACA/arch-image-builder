@@ -54,6 +54,10 @@ filesystem:
       [Resolve]
       MulticastDNS=no
       LLMNR=no
+  - path: /etc/NetworkManager/conf.d/80-no-wifi-powersave.conf
+    content: |
+      [connection]
+      wifi.powersave = 2
 sysconf:
   chassis: handset
   environments:
