@@ -2,16 +2,16 @@ pacman:
   repo:
   - name: core
     priority: 100
-    server: http://mirrors.bfsu.edu.cn/archlinuxarm/${arch}/core
+    server: http://mirror.archlinuxarm.org/$$arch/$$repo
   - name: extra
     priority: 110
-    server: https://mirrors.bfsu.edu.cn/archlinuxarm/${arch}/extra
+    server: http://mirror.archlinuxarm.org/$$arch/$$repo
   - name: alarm
     priority: 120
-    server: https://mirrors.bfsu.edu.cn/archlinuxarm/${arch}/alarm
+    server: http://mirror.archlinuxarm.org/$$arch/$$repo
   - name: aur
     priority: 130
-    server: https://mirrors.bfsu.edu.cn/archlinuxarm/${arch}/aur
+    server: http://mirror.archlinuxarm.org/$$arch/$$repo
   trust:
   - builder@archlinuxarm.org
   install:

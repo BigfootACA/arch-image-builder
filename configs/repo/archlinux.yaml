@@ -2,13 +2,13 @@ pacman:
   repo:
   - name: core
     priority: 100
-    server: https://mirrors.bfsu.edu.cn/archlinux/core/os/${arch}
+    server: https://geo.mirror.pkgbuild.com/$$repo/os/$$arch
   - name: extra
     priority: 110
-    server: https://mirrors.bfsu.edu.cn/archlinux/extra/os/${arch}
+    server: https://geo.mirror.pkgbuild.com/$$repo/os/$$arch
   - name: multilib
     priority: 120
-    server: https://mirrors.bfsu.edu.cn/archlinux/multilib/os/${arch}
+    server: https://geo.mirror.pkgbuild.com/$$repo/os/$$arch
   trust:
   - eworm@archlinux.org
   - dvzrv@archlinux.org

@@ -2,7 +2,7 @@ pacman:
   repo:
   - name: blackarch
     priority: 1000
-    server: https://mirrors.bfsu.edu.cn/blackarch/blackarch/os/${arch}
+    server: https://www.blackarch.org/$$repo/os/$$arch
   trust:
   - noptrix@nullsecurity.net
   install:

@@ -2,7 +2,7 @@ pacman:
   repo:
   - name: renegade-project
     priority: 200
-    server: https://mirror.renegade-project.tech/arch/${arch}
+    server: https://mirror.renegade-project.tech/arch/$$arch
   trust:
   - renegade-project@classfun.cn
   install:

@@ -2,7 +2,7 @@ pacman:
   repo:
   - name: archlinuxcn
     priority: 500
-    server: https://mirrors.bfsu.edu.cn/archlinuxcn/${arch}
+    server: https://repo.archlinuxcn.org/$$arch
   trust:
   - farseerfc@archlinux.org
   install:
