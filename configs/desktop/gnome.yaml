@@ -2,6 +2,7 @@
 pacman:
   install:
   - gnome
+  - gnome-packagekit
 systemd:
   default: graphical.target
   enable:
