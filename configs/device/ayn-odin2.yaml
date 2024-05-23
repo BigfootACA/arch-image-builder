@@ -25,6 +25,9 @@ pacman:
 
   # Vulkan dependency
   - xcb-util-keysyms
+
+  # AYN Odin2 RGB LED Tuner
+  - rgb-led
 systemd:
   disable:
   # No modem in this device
