@@ -4,8 +4,10 @@ import logging
 import shutil
 import libarchive
 from logging import getLogger
+from builder.lib.serializable import SerializableDict
 from builder.lib.context import ArchBuilderContext
 from builder.lib.config import ArchBuilderConfigError
+from builder.lib.subscript import resolve_simple_values
 log = getLogger(__name__)
 
 
@@ -30,6 +32,51 @@ def progress_cb(target, percent, n, i):
 	log.info(f"processing {target} ({i}/{n})")
 
 
+class PacmanRepoServer(SerializableDict):
+	url: str = None
+	name: str = None
+	mirror: bool = False
+
+	def __init__(
+		self,
+		name: str = None,
+		url: str = None,
+		mirror: bool = None
+	):
+		if url is not None: self.url = url
+		if name is not None: self.name = name
+		if mirror is not None: self.mirror = mirror
+
+
+class PacmanRepo(SerializableDict):
+	name: str = None
+	priority: int = 10000
+	servers: list[PacmanRepoServer] = None
+
+	def __init__(
+		self,
+		name: str = None,
+		priority: int = None,
+		servers: list[PacmanRepoServer] = None
+	):
+		if name is not None: self.name = name
+		if priority is not None: self.priority = priority
+		if servers is not None: self.servers = servers
+		else: self.servers = []
+
+	def add_server(
+		self,
+		name: str = None,
+		url: str = None,
+		mirror: bool = None
+	):
+		self.servers.append(PacmanRepoServer(
+			name=name,
+			url=url,
+			mirror=mirror,
+		))
+
+
 class Pacman:
 	handle: pyalpm.Handle
 	ctx: ArchBuilderContext
@@ -37,17 +84,22 @@ class Pacman:
 	databases: dict[str: pyalpm.DB]
 	config: dict
 	caches: list[str]
+	repos: list[PacmanRepo]
 
 	def append_repos(self, lines: list[str]):
 		"""
 		Add all databases into config
 		"""
-		for repo in self.databases:
-			db = self.databases[repo]
-			lines.append(f"[{repo}]\n")
-			for server in db.servers:
-				log.debug(f"server {server}")
-				lines.append(f"Server = {server}\n")
+		for repo in self.repos:
+			lines.append(f"[{repo.name}]\n")
+			for server in repo.servers:
+				if server.mirror:
+					lines.append(f"# Mirror {server.name}\n")
+					log.debug(f"use mirror {server.name} url {server.url}")
+				else:
+					lines.append("# Original Repo\n")
+					log.debug(f"use original repo url {server.url}")
+				lines.append(f"Server = {server.url}\n")
 
 	def append_config(self, lines: list[str]):
 		"""
@@ -127,54 +179,27 @@ class Pacman:
 		ret = self.ctx.run_external(cmds)
 		if ret != 0: raise OSError(f"pacman failed with {ret}")
 
-	def add_database(self, repo: dict):
-		"""
-		Add a database and update it
-		"""
-		def resolve(url: str) -> str:
-			"""
-			Replace pacman.conf variables
-			"""
-			return (url
-				.replace("$arch", self.ctx.tgt_arch)
-				.replace("$repo", name))
-		if "name" not in repo:
-			raise ArchBuilderConfigError("repo name not set")
-		name = repo["name"]
-
-		# never add local into database
-		if name == "local" or "/" in name:
-			raise ArchBuilderConfigError("bad repo name")
-
-		# register database
-		if name not in self.databases:
-			self.databases[name] = self.handle.register_syncdb(
-				name, pyalpm.SIG_DATABASE_MARGINAL_OK
-			)
-		db = self.databases[name]
-
-		# add databases servers
-		servers: list[str] = []
-		if "server" in repo:
-			servers.append(resolve(repo["server"]))
-		if "servers" in repo:
-			for server in repo["servers"]:
-				servers.append(resolve(server))
-		db.servers = servers
-
-		# update database now via pyalpm
-		log.info(f"updating database {name}")
-		db.update(False)
-
 	def load_databases(self):
 		"""
 		Add all databases and load them
 		"""
-		cfg = self.config
-		if "repo" not in cfg:
-			raise ArchBuilderConfigError("no repos found in config")
-		for repo in cfg["repo"]:
-			self.add_database(repo)
+		for mirror in self.repos:
+			# register database
+			if mirror.name not in self.databases:
+				self.databases[mirror.name] = self.handle.register_syncdb(
+					mirror.name, pyalpm.SIG_DATABASE_MARGINAL_OK
+				)
+			db = self.databases[mirror.name]
+
+			# add databases servers
+			servers: list[str] = []
+			for server in mirror.servers:
+				servers.append(server.url)
+			db.servers = servers
+
+			# update database now via pyalpm
+			log.info(f"updating database {mirror.name}")
+			db.update(False)
 		self.init_config()
 		self.refresh()
 
@@ -231,6 +256,78 @@ class Pacman:
 		os.makedirs(work_cache, mode=0o0755, exist_ok=True)
 		os.makedirs(root_cache, mode=0o0755, exist_ok=True)
 
+	def add_repo(self, repo: PacmanRepo):
+		if not repo or not repo.name or len(repo.servers) <= 0:
+			raise ArchBuilderConfigError("bad repo")
+		self.repos.append(repo)
+		self.repos.sort(key=lambda r: r.priority)
+
+	def init_repos(self):
+		"""
+		Initialize mirrors
+		"""
+		if "repo" not in self.config:
+			raise ArchBuilderConfigError("no repos found in config")
+		mirrors = self.ctx.get("mirrors", [])
+		for repo in self.config["repo"]:
+			if "name" not in repo:
+				raise ArchBuilderConfigError("repo name not set")
+
+			# never add local into database
+			if repo["name"] == "local" or "/" in repo["name"]:
+				raise ArchBuilderConfigError("bad repo name")
+
+			# create pacman repo instance
+			pacman_repo = PacmanRepo(name=repo["name"])
+			if "priority" in repo:
+				pacman_repo.priority = repo["priority"]
+
+			originals: list[str] = []
+			servers: list[str] = []
+
+			# add all original repo url
+			if "server" in repo: servers.append(repo["server"])
+			if "servers" in repo: servers.extend(repo["server"])
+			if len(servers) <= 0:
+				raise ArchBuilderConfigError("no any original repo url found")
+
+			# resolve original repo url
+			for server in servers:
+				originals.append(resolve_simple_values(server, {
+					"arch": self.ctx.tgt_arch,
+					"repo": repo["name"],
+				}))
+
+			# add repo mirror url
+			for mirror in mirrors:
+				if "name" not in mirror:
+					raise ArchBuilderConfigError("mirror name not set")
+				if "repos" not in mirror:
+					raise ArchBuilderConfigError("repos list not set")
+				for repo in mirror["repos"]:
+					if "original" not in repo:
+						raise ArchBuilderConfigError("original url not set")
+					if "mirror" not in repo:
+						raise ArchBuilderConfigError("mirror url not set")
+					for original in originals:
+						if original.startswith(repo["original"]):
+							path = original[len(repo["original"]):]
+							real_url = repo["mirror"] + path
+							pacman_repo.add_server(
+								name=mirror["name"],
+								url=real_url,
+								mirror=True,
+							)
+
+			# add original url
+			for original in originals:
+				pacman_repo.add_server(
+					url=original,
+					mirror=False
+				)
+
+			self.add_repo(pacman_repo)
+
 	def __init__(self, ctx: ArchBuilderContext):
 		"""
 		Initialize pacman context
@@ -250,7 +347,9 @@ class Pacman:
 		self.handle.progresscb = progress_cb
 		self.databases = {}
 		self.caches = []
+		self.repos = []
 		self.init_cache()
+		self.init_repos()
 		for cache in self.caches:
 			self.handle.add_cachedir(cache)
 		self.init_config()

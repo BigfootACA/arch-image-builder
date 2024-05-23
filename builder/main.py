@@ -18,6 +18,7 @@ def parse_arguments(ctx: ArchBuilderContext):
 	parser.add_argument("-C", "--clean",       help="Clean workspace before build", default=False, action='store_true')
 	parser.add_argument("-p", "--preset",      help="Select preset to create package")
 	parser.add_argument("-c", "--config",      help="Select config to build", action='append')
+	parser.add_argument("-m", "--mirror",      help="Select mirror to download package", action='append')
 	parser.add_argument("-o", "--workspace",   help="Set workspace for builder", default=ctx.work)
 	parser.add_argument("-d", "--debug",       help="Enable debug logging", default=False, action='store_true')
 	parser.add_argument("-G", "--no-gpgcheck", help="Disable GPG check", default=False, action='store_true')
@@ -44,6 +45,10 @@ def parse_arguments(ctx: ArchBuilderContext):
 		config.load_preset(ctx, args.preset)
 		pcfgs = ctx.get("package.configs", [])
 		configs.extend(pcfgs)
+
+	if args.mirror:
+		for mirror in args.mirror:
+			configs.extend([f"mirrors/{name}" for name in mirror.split(",")])
 
 	# load and populate configs
 	config.load_configs(ctx, configs)
