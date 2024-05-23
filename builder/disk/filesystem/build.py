@@ -53,7 +53,10 @@ class FileSystemBuilder(ImageContentBuilder):
 
 	def proc_grow(self, cfg: dict, mnt: MountPoint):
 		root = self.builder.ctx.get_rootfs()
-		if "ptype" not in cfg: raise ArchBuilderConfigError("no ptype set for grow")
+		if "ptype" not in cfg:
+			log.warning("no partition type set, grow filesystem only")
+			mnt.option.append("x-systemd.growfs")
+			return
 		ptype = DiskTypesGPT.lookup_one_uuid(cfg["ptype"])
 		if ptype is None: raise ArchBuilderConfigError(f"unknown type {cfg['ptype']}")
 		mnt.option.append("x-systemd.growfs")
