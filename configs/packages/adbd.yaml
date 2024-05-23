@@ -1,0 +1,9 @@
+# Android Debug Bridge Daemon via USB Gadget
+pacman:
+  install:
+  - adbd
+systemd:
+  enable:
+  - adbd-usb.service
++also:
+- packages/systemd-gadget
