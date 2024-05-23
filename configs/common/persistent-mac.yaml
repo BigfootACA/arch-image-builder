@@ -1,0 +1,52 @@
+filesystem:
+  files:
+  - path: /etc/systemd/scripts/generate-mac.sh
+    content: |
+      #!/bin/bash
+      mac="$$((cat /etc/machine-id; echo "$$@"; ) | sha256sum -)"
+      echo "42:$${mac:0:2}:$${mac:4:2}:$${mac:8:2}:$${mac:12:2}:$${mac:16:2}"
+  - path: /etc/systemd/scripts/net-update-mac.sh
+    content: |
+      #!/bin/bash
+      MAC="$$(bash /etc/systemd/scripts/generate-mac.sh "$$@")"
+      ip link set dev "$$@" down &> /dev/null || true
+      ip link set dev "$$@" address "$$MAC"
+  - path: /etc/systemd/scripts/bt-update-mac.sh
+    content: |
+      #!/bin/bash
+      MAC="$$(bash /etc/systemd/scripts/generate-mac.sh bluetooth)"
+      for i in {0..5}; do
+        sleep "$$i"
+        if bluetoothctl mgmt.public-addr "$$MAC"; then
+          break
+        fi
+      done
+      exit "$$?"
+  - path: /etc/systemd/system/bt-update-mac.service
+    content: |
+      [Unit]
+      Description=Update Bluetooth Persistent MAC Address
+      After=bluetooth.service systemd-machine-id-commit.service
+      Wants=bluetooth.service
+      [Service]
+      Type=oneshot
+      ExecStart=bash /etc/systemd/scripts/bt-update-mac.sh
+      SyslogIdentifier=bt-update-mac
+      [Install]
+      WantedBy=bluetooth.target
+  - path: /etc/systemd/system/net-update-mac@.service
+    content: |
+      [Unit]
+      Description=Update Persistent MAC Address for %i
+      Before=network.target
+      After=wait-interface@%i.service systemd-machine-id-commit.service
+      Wants=wait-interface@%i.service
+      [Service]
+      Type=oneshot
+      ExecStart=bash /etc/systemd/scripts/net-update-mac.sh %i
+      SyslogIdentifier=wlan-update-mac
+      [Install]
+      WantedBy=sysinit.target
++also:
+- packages/bluez
+- common/systemd-wait-for
