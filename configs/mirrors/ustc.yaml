@@ -1,0 +1,21 @@
+mirrors:
+- name: ustc
+  repos:
+  # ArchLinux
+  - original: https://geo.mirror.pkgbuild.com/
+    mirror: https://mirrors.ustc.edu.cn/archlinux/
+
+  # ArchLinux ARM
+  - name: archlinuxarm
+    original: http://mirror.archlinuxarm.org/
+    mirror: https://mirrors.ustc.edu.cn/archlinuxarm/
+
+  # ArchLinux CN
+  - name: archlinuxcn
+    original: https://repo.archlinuxcn.org/
+    mirror: https://mirrors.ustc.edu.cn/archlinuxcn/
+
+  # BlackArch
+  - name: blackarch
+    original: https://www.blackarch.org/blackarch/
+    mirror: https://mirrors.ustc.edu.cn/blackarch/

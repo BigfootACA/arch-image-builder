@@ -1,0 +1,26 @@
+mirrors:
+- name: tuna
+  repos:
+  # ArchLinux
+  - original: https://geo.mirror.pkgbuild.com/
+    mirror: https://mirrors.tuna.tsinghua.edu.cn/archlinux/
+
+  # ArchLinux ARM
+  - name: archlinuxarm
+    original: http://mirror.archlinuxarm.org/
+    mirror: https://mirrors.tuna.tsinghua.edu.cn/archlinuxarm/
+
+  # Arch4Edu
+  - name: arch4edu
+    original: https://repository.arch4edu.org/
+    mirror: https://mirrors.tuna.tsinghua.edu.cn/arch4edu/
+
+  # ArchLinux CN
+  - name: archlinuxcn
+    original: https://repo.archlinuxcn.org/
+    mirror: https://mirrors.tuna.tsinghua.edu.cn/archlinuxcn/
+
+  # BlackArch
+  - name: blackarch
+    original: https://www.blackarch.org/blackarch/
+    mirror: https://mirrors.tuna.tsinghua.edu.cn/blackarch/
