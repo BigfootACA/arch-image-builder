@@ -39,6 +39,13 @@ def dict_get(key: str, root: dict):
 	return node
 
 
+def resolve_simple_values(original: str, values: dict) -> str:
+	value = str(original)
+	for key in values:
+		value = value.replace(f"${key}", values[key])
+	return value
+
+
 class SubScript:
 	root: dict
 	resolved: list[str]
