@@ -262,7 +262,7 @@ class MountPoint(SerializableDict):
 		mnt.source = self.source
 		mnt.target = self.target
 		mnt.fstype = self.fstype
-		mnt.option = self.option
+		mnt.options = self.options
 		mnt.fs_freq = self.fs_freq
 		mnt.fs_passno = self.fs_passno
 		return mnt
