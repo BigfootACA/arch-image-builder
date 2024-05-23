@@ -109,6 +109,9 @@ mkinitcpio:
 # USB Gadget tools
 - packages/systemd-gadget
 
+# Android Debug Bridge Daemon via USB Gadget
+- packages/adbd
+
 # OpenSSH Server
 - packages/openssh
 
