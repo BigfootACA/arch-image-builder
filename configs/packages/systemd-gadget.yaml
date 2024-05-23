@@ -9,5 +9,15 @@ systemd:
   - getty@ttyGS0.service
   - usbgadget-func-acm.service
   enable:
+  - gadget-init.service
+  - gadget-start.service
+  - usbgadget-func-rndis.service
   # Enable systemd-networkd for RNDIS
   - systemd-networkd.service
+filesystem:
+  files:
+  - path: /etc/systemd/network/sharenet.network.d/override.conf
+    content: |
+      [DHCPServer]
+      EmitRouter=no
+      EmitDNS=no
