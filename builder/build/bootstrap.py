@@ -88,6 +88,9 @@ def build_rootfs(ctx: ArchBuilderContext):
 			# initialize mount points for chroot
 			mount.init_mount(ctx)
 
+			# running add files hooks (for build settings)
+			filesystem.add_files_all(ctx, "pre-build")
+
 			# initialize pacman context
 			pacman = pacman_comp.Pacman(ctx)
 
@@ -103,8 +106,14 @@ def build_rootfs(ctx: ArchBuilderContext):
 			# install all keyring packages before other packages
 			pacman_build.proc_pacman_keyring(ctx, pacman)
 
+			# running add files hooks (for pacman settings)
+			filesystem.add_files_all(ctx, "pre-pacman")
+
 			# real install all packages
 			pacman_build.proc_pacman(ctx, pacman)
+
+			# running add files hooks (for user settings)
+			filesystem.add_files_all(ctx, "pre-user")
 
 			# reload user databases after install packages
 			ctx.reload_passwd()
@@ -124,6 +133,9 @@ def build_rootfs(ctx: ArchBuilderContext):
 			# setup system names (environments / hosts / hostname / machine-info)
 			names.proc_names(ctx)
 
+			# running add files hooks (for initramfs settings)
+			filesystem.add_files_all(ctx, "pre-initramfs")
+
 			# recreate initramfs
 			mkinitcpio.proc_mkinitcpio(ctx)
 
@@ -138,6 +150,9 @@ def build_rootfs(ctx: ArchBuilderContext):
 
 		# cleanup unneeded files
 		cleanup(ctx)
+
+	# running add files hooks (after build rootfs)
+	filesystem.add_files_all(ctx, "post-build")
 
 	# reload user database before create images
 	ctx.reload_passwd()
