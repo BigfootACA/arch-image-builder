@@ -71,8 +71,5 @@ def parse_user_from(
 	gid = parse_usergroup_from(ctx, node, True, gid)
 	if gid == -1:
 		user = ctx.passwd.lookup_uid(uid)
-		if user is None: raise ArchBuilderConfigError(
-			f"user {user} not found"
-		)
-		gid = user.gid
+		gid = user.gid if user else uid
 	return uid, gid
