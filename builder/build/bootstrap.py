@@ -112,11 +112,11 @@ def build_rootfs(ctx: ArchBuilderContext):
 			# real install all packages
 			pacman_build.proc_pacman(ctx, pacman)
 
-			# running add files hooks (for user settings)
-			filesystem.add_files_all(ctx, "pre-user")
-
 			# reload user databases after install packages
 			ctx.reload_passwd()
+
+			# running add files hooks (for user settings)
+			filesystem.add_files_all(ctx, "pre-user")
 
 			# create custom users and groups
 			user.proc_usergroup(ctx)
