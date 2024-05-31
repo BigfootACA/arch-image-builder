@@ -1,0 +1,12 @@
+# Wayland supports for Plasma KDE desktop
+filesystem:
+  files:
+  - path: /etc/sddm.conf.d/wayland.conf
+    content: |
+      [General]
+      DisplayServer=wayland
+      GreeterEnvironment=QT_WAYLAND_SHELL_INTEGRATION=layer-shell
+      [Wayland]
+      CompositorCommand=kwin_wayland --drm --no-lockscreen --no-global-shortcuts --locale1
++also:
+- desktop/plasma
