@@ -1,0 +1,17 @@
+filesystem:
+  files:
+  - path: /etc/systemd/system/dconf-update.service
+    content: |
+      [Unit]
+      Description=Update Configuration database system
+      [Service]
+      Type=oneshot
+      ExecStart=dconf update
+      [Install]
+      WantedBy=bluetooth.target
+systemd:
+  enable:
+  - dconf-update.service
+pacman:
+  install:
+  - dconf
