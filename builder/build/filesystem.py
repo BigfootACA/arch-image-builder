@@ -75,8 +75,9 @@ def check_allowed(path: str, action: str):
 	Why these folder is writable
 	1. /etc/ is used for administrator configs
 	2. /boot/ is used for system boot up, you can put bootloaders configs into this folder
+	3. /var/ is used for daemons runtime states
 	"""
-	if not path.startswith(("/etc/", "/boot/")):
+	if not path.startswith(("/etc/", "/boot/", "/var/")):
 		raise ArchBuilderConfigError(f"{action} {path} is not allowed")
 
 
