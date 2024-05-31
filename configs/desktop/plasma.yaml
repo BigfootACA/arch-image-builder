@@ -1,0 +1,19 @@
+# Plasma KDE desktop
+pacman:
+  install:
+  - plasma
+  - sddm
+  - packagekit-qt6
+systemd:
+  default: graphical.target
+  enable:
+  - sddm.service
+filesystem:
+  files:
+  - path: /etc/sddm.conf.d/breeze.conf
+    content: |
+      [Theme]
+      Current=breeze
++also:
+# Ensure NetworkManager is enabled
+- packages/network-manager
