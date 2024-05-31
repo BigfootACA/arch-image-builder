@@ -73,6 +73,17 @@ def gen_environments(ctx: ArchBuilderContext):
 			val = envs[key]
 			f.write(f"{key}=\"{val}\"\n")
 	log.info(f"generated environment {file}")
+	folder = os.path.join(root, "etc/systemd/system.conf.d")
+	os.makedirs(folder, mode=0o0755, exist_ok=True)
+	file = os.path.join(folder, "environment.conf")
+	with open(file, "w") as f:
+		f.write("# default environments for all processes\n\n")
+		f.write("[Manager]\n")
+		for key in envs:
+			val = envs[key]
+			f.write(f"DefaultEnvironment=\"{key}={val}\"\n")
+	os.chmod(file, mode=0o0644)
+	log.info(f"generated environment {file}")
 
 
 def proc_names(ctx: ArchBuilderContext):
