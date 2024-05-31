@@ -1,0 +1,16 @@
+# GNOME desktop
+pacman:
+  install:
+  - phosh
+filesystem:
+  files:
+  - path: /var/lib/AccountsService/users/alarm
+    content: |
+      [User]
+      Session=phosh
+  - path: /var/lib/AccountsService/users/arch
+    content: |
+      [User]
+      Session=phosh
++also:
+- desktop/gnome
