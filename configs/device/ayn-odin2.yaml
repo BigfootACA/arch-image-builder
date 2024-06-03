@@ -15,7 +15,7 @@ pacman:
   - linux-firmware-ayn-odin2
 
   # Mainline kernel for AYN Odin2
-  - linux-ayn-odin2-edge
+  - linux-ayn-odin2-stable
 
   # Adreno 740 GPU
   - mesa-qcom-git
@@ -28,6 +28,15 @@ pacman:
 
   # AYN Odin2 RGB LED Tuner
   - rgb-led
+
+  # picked by sakuramist
+  - yay
+  - btop
+  - chromium
+  - box64-sd8g2-git
+  - ayn-odin2-meta
+  - base-devel
+
 systemd:
   disable:
   # No modem in this device
@@ -35,35 +44,88 @@ systemd:
   enable:
   - bt-update-mac.service
   - net-update-mac@wlp1s0.service
+  - systemd-timesyncd.service
 filesystem:
   files:
-  # GamePAD workaround
-  - path: /etc/udev/rules.d/99-${device}.rules
-    content: |
-      SUBSYSTEM=="input", ATTRS{name}=="Ayn Odin2 Gamepad", MODE="0666", ENV{ID_INPUT_MOUSE}="0", ENV{ID_INPUT_JOYSTICK}="1"
-  - path: /etc/systemd/logind.conf.d/power-key-lock.conf
-    content: |
-      [Login]
-      HandlePowerKey=lock
   - path: /etc/systemd/system.conf.d/show-status.conf
     content: |
       [Manager]
       ShowStatus=yes
-  - path: /etc/systemd/sleep.conf.d/no-suspend.conf
-    content: |
-      [Sleep]
-      AllowSuspend=no
-      AllowHibernation=no
-      AllowSuspendThenHibernate=no
   - path: /etc/systemd/resolved.conf.d/no-mdns.conf
     content: |
       [Resolve]
       MulticastDNS=no
       LLMNR=no
-  - path: /etc/NetworkManager/conf.d/80-no-wifi-powersave.conf
+  - path: /etc/dconf/profile/user
     content: |
-      [connection]
-      wifi.powersave = 2
+      user-db:user
+      system-db:local
+  - path: /etc/dconf/profile/gdm
+    content: |
+      user-db:user
+      system-db:local
+  - path: /etc/dconf/db/local.d/00-hidpi
+    content: |
+      [org/gnome/mutter]
+      experimental-features=['scale-monitor-framebuffer']
+  - path: /etc/dconf/db/locks/hidpi
+    content: |
+      /org/gnome/mutter/experimental-features
+  - path: /etc/chromium-flags.conf
+    content: |
+      --ozone-platform-hint=auto
+  - path: /var/lib/gdm/.config/monitors.xml
+    content: |
+      <monitors version="2">
+        <configuration>
+          <logicalmonitor>
+            <x>0</x>
+            <y>0</y>
+            <scale>1.5</scale>
+            <primary>yes</primary>
+            <monitor>
+              <monitorspec>
+                <connector>DSI-1</connector>
+                <vendor>unknown</vendor>
+                <product>unknown</product>
+                <serial>unknown</serial>
+              </monitorspec>
+              <mode>
+                <width>1920</width>
+                <height>1080</height>
+                <rate>60.000</rate>
+              </mode>
+            </monitor>
+          </logicalmonitor>
+        </configuration>
+      </monitors>
+  - path: /etc/skel/.config/monitors.xml
+    stage: pre-user
+    content: |
+      <monitors version="2">
+        <configuration>
+          <logicalmonitor>
+            <x>0</x>
+            <y>0</y>
+            <scale>1.5</scale>
+            <primary>yes</primary>
+            <monitor>
+              <monitorspec>
+                <connector>DSI-1</connector>
+                <vendor>unknown</vendor>
+                <product>unknown</product>
+                <serial>unknown</serial>
+              </monitorspec>
+              <mode>
+                <width>1920</width>
+                <height>1080</height>
+                <rate>60.000</rate>
+              </mode>
+            </monitor>
+          </logicalmonitor>
+        </configuration>
+      </monitors>
+
 sysconf:
   chassis: handset
   environments:
@@ -71,6 +133,7 @@ sysconf:
     __GLX_VENDOR_LIBRARY_NAME: mesa
     MESA_LOADER_DRIVER_OVERRIDE: zink
     GALLIUM_DRIVER: zink
+    ELECTRON_OZONE_PLATFORM_HINT: auto
 kernel:
   cmdline:
   - clk_ignore_unused
@@ -129,3 +192,5 @@ mkinitcpio:
 
 # Root without password
 - common/wheel-nopasswd
+
+- common/dconf-update

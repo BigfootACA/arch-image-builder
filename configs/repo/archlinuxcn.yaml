@@ -5,5 +5,6 @@ pacman:
     server: https://repo.archlinuxcn.org/$$arch
   trust:
   - farseerfc@archlinux.org
+  - lilac@build.archlinuxcn.org
   install:
   - archlinuxcn/archlinuxcn-keyring
