@@ -142,7 +142,8 @@ class ArchBuilderContext:
 		/,
 		cwd: str = None,
 		env: dict = None,
-		stdin: str | bytes = None
+		stdin: str | bytes = None,
+		cgroup: CGroup = None,
 	) -> int:
 		"""
 		Run external command
@@ -153,7 +154,8 @@ class ArchBuilderContext:
 		log.debug(f"running external command {argv}")
 		fstdin = None if stdin is None else PIPE
 		proc = Popen(args, cwd=cwd, env=env, stdin=fstdin)
-		self.cgroup.add_pid(proc.pid)
+		if cgroup is None: cgroup = self.cgroup
+		cgroup.add_pid(proc.pid)
 		if stdin:
 			if type(stdin) is str: stdin = stdin.encode()
 			proc.stdin.write(stdin)

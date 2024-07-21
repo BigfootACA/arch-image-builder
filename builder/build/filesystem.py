@@ -5,6 +5,7 @@ from builder.lib import utils
 from builder.component import user
 from builder.lib.config import ArchBuilderConfigError
 from builder.lib.context import ArchBuilderContext
+from builder.lib.cgroup import CGroup
 log = getLogger(__name__)
 
 
@@ -14,6 +15,7 @@ def chroot_run(
 	cwd: str = None,
 	env: dict = None,
 	stdin: str | bytes = None,
+	cgroup: CGroup = None,
 ) -> int:
 	"""
 	Chroot into rootfs and run programs
@@ -24,7 +26,7 @@ def chroot_run(
 	path = ctx.get_rootfs()
 	args = ["chroot", path]
 	args.extend(utils.parse_cmd_args(cmd))
-	return ctx.run_external(args, cwd, env, stdin)
+	return ctx.run_external(args, cwd, env, stdin, cgroup)
 
 
 def proc_mkdir(ctx: ArchBuilderContext, file: dict, path: str):
