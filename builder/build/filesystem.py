@@ -87,8 +87,8 @@ def add_file(ctx: ArchBuilderContext, file: dict):
 	# at least path content
 	if "path" not in file:
 		raise ArchBuilderConfigError("no path set in file")
-	if "content" not in file:
-		raise ArchBuilderConfigError("no content set in file")
+	if "content" not in file and "source" not in file:
+		raise ArchBuilderConfigError("no content or source set in file")
 	root = ctx.get_rootfs()
 	path: str = file["path"]
 	if path.startswith("/"): path = path[1:]
@@ -99,6 +99,9 @@ def add_file(ctx: ArchBuilderContext, file: dict):
 
 	# follow symbolic links
 	follow = file["follow"] if "follow" in file else True
+
+	# source is a folder 
+	folder = file["folder"] if "folder" in file else False
 
 	# files mode
 	mode = int(file["mode"]) if "mode" in file else 0o0644
@@ -111,15 +114,27 @@ def add_file(ctx: ArchBuilderContext, file: dict):
 	# resolve to rootfs
 	real = os.path.join(root, path)
 
-	if not follow and os.path.exists(real): os.remove(real)
-	log.debug(f"create file {real}")
-	with open(real, "wb") as f:
-		content: str = file["content"]
-		log.debug(
-			"write to %s with %s",
-			real, content.strip()
-		)
-		f.write(content.encode(encode))
+	if "content" in file:
+		if not follow and os.path.exists(real): os.remove(real)
+		log.debug(f"create file {real}")
+		with open(real, "wb") as f:
+			content: str = file["content"]
+			log.debug(
+				"write to %s with %s",
+				real, content.strip()
+			)
+			f.write(content.encode(encode))
+	elif "source" in file:
+		src: str = file["source"]
+		if not src.startswith("/"):
+			src = os.path.join(ctx.dir, src)
+		log.debug(f"copy {src} to {real}")
+		if folder:
+			shutil.copytree(src, real, symlinks=follow)
+		else:
+			shutil.copyfile(src, real, follow_symlinks=follow)
+	else:
+		assert False
 	log.debug(f"chmod file {real} to {mode:04o}")
 	os.chmod(real, mode=mode)
 	log.debug(f"chown file {real} to {uid}:{gid}")
