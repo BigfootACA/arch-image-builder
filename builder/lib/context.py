@@ -7,7 +7,7 @@ from builder.lib.cpu import cpu_arch_get
 from builder.lib.utils import parse_cmd_args
 from builder.lib.subscript import dict_get
 from builder.lib.loop import loop_detach
-from builder.lib.mount import MountTab
+from builder.lib.mount import MountTab, MountPoint
 from builder.lib.cgroup import CGroup
 from builder.lib.subscript import SubScript
 from builder.lib.shadow import PasswdFile, GroupFile
@@ -189,3 +189,31 @@ class ArchBuilderContext:
 		ss = SubScript()
 		self.config = deepcopy(self.config_orig)
 		ss.parse(self.config)
+
+	def mount(
+		self,
+		source: str,
+		target: str,
+		fstype: str,
+		options: str,
+	) -> MountPoint:
+		"""
+		Add a mount point
+		"""
+		mnt = MountPoint()
+		mnt.source = source
+		mnt.target = os.path.realpath(target)
+		mnt.fstype = fstype
+		mnt.options = options
+		mnt.mount()
+		self.mounted.insert(0, mnt)
+		return mnt
+
+	def umount(self, path: str):
+		"""
+		Remove a mount point
+		"""
+		real = os.path.realpath(path)
+		if not os.path.ismount(real): return
+		for mnt in self.mounted.find_target(real):
+			self.mounted.remove(mnt)

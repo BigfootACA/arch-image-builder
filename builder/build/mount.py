@@ -1,7 +1,7 @@
 import os
 from logging import getLogger
 from builder.lib.context import ArchBuilderContext
-from builder.lib.mount import MountTab, MountPoint
+from builder.lib.mount import MountTab
 log = getLogger(__name__)
 
 
@@ -49,25 +49,6 @@ def undo_mounts(ctx: ArchBuilderContext):
 		raise RuntimeError("mount points not cleanup")
 
 
-def do_mount(
-	ctx: ArchBuilderContext,
-	source: str,
-	target: str,
-	fstype: str,
-	options: str
-):
-	"""
-	Add a mount point
-	"""
-	mnt = MountPoint()
-	mnt.source = source
-	mnt.target = target
-	mnt.fstype = fstype
-	mnt.options = options
-	mnt.mount()
-	ctx.mounted.insert(0, mnt)
-
-
 def init_mount(ctx: ArchBuilderContext):
 	"""
 	Setup mount points for rootfs
@@ -80,7 +61,7 @@ def init_mount(ctx: ArchBuilderContext):
 			os.symlink(target, real)
 	def root_mount(source, target, fstype, options):
 		real = os.path.realpath(os.path.join(root, target))
-		do_mount(ctx, source, real, fstype, options)
+		ctx.mount(source, real, fstype, options)
 	try:
 		# ensure mount point is clean
 		mnts = MountTab.parse_mounts()
