@@ -78,8 +78,17 @@ def check_allowed(path: str, action: str):
 	1. /etc/ is used for administrator configs
 	2. /boot/ is used for system boot up, you can put bootloaders configs into this folder
 	3. /var/ is used for daemons runtime states
+	3. /usr/lib/modules/ is used for kernel modules (custom kernel)
+	3. /usr/lib/firmware/ is used for system firmware (custom firmware)
 	"""
-	if not path.startswith(("/etc/", "/boot/", "/var/")):
+	allow_list = (
+		"/etc/",
+		"/boot/",
+		"/var/",
+		"/usr/lib/modules",
+		"/usr/lib/firmware",
+	)
+	if not path.startswith(allow_list):
 		raise ArchBuilderConfigError(f"{action} {path} is not allowed")
 
 
