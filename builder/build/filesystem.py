@@ -139,7 +139,7 @@ def add_file(ctx: ArchBuilderContext, file: dict):
 			src = os.path.join(ctx.dir, src)
 		log.debug(f"copy {src} to {real}")
 		if folder:
-			shutil.copytree(src, real, symlinks=follow)
+			shutil.copytree(src, real, symlinks=follow, dirs_exist_ok=True)
 		else:
 			shutil.copyfile(src, real, follow_symlinks=follow)
 	else:
