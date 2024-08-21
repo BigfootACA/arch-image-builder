@@ -52,17 +52,23 @@ class PacmanRepo(SerializableDict):
 	name: str = None
 	priority: int = 10000
 	servers: list[PacmanRepoServer] = None
+	publickey: str = None
+	keyid: str = None
 
 	def __init__(
 		self,
 		name: str = None,
 		priority: int = None,
-		servers: list[PacmanRepoServer] = None
+		servers: list[PacmanRepoServer] = None,
+		publickey: str = None,
+		keyid: str = None
 	):
 		if name is not None: self.name = name
 		if priority is not None: self.priority = priority
 		if servers is not None: self.servers = servers
 		else: self.servers = []
+		if publickey is not None: self.publickey = publickey
+		if keyid is not None: self.keyid = keyid
 
 	def add_server(
 		self,
@@ -135,6 +141,19 @@ class Pacman:
 			return
 		log.info("initializing pacman keyring")
 		self.pacman_key(["--init"])
+
+		# Download and add public keys
+		for repo in self.repos:
+			if repo.publickey is not None:
+				keypath = os.path.join(self.ctx.work, f"{repo.name}.pub")
+				cmds = ["wget", repo.publickey, "-O", keypath]
+				ret = self.ctx.run_external(cmds)
+				if ret != 0: raise OSError(f"wget failed with {ret}")
+				self.pacman_key(["--add", keypath])
+				self.lsign_key(repo.keyid)
+			elif repo.keyid is not None:
+				self.recv_keys(repo.keyid)
+				self.lsign_key(repo.keyid)
 
 	def init_config(self):
 		"""
@@ -281,6 +300,16 @@ class Pacman:
 			pacman_repo = PacmanRepo(name=repo["name"])
 			if "priority" in repo:
 				pacman_repo.priority = repo["priority"]
+
+			# add public key url and id
+			if "publickey" in repo and "keyid" not in repo:
+				raise ArchBuilderConfigError("publickey is provided without keyid")
+
+			if "publickey" in repo:
+				pacman_repo.publickey = repo["publickey"]
+
+			if "keyid" in repo:
+				pacman_repo.keyid = repo["keyid"]
 
 			originals: list[str] = []
 			servers: list[str] = []
