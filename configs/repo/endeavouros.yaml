@@ -1,0 +1,12 @@
+pacman:
+  repo:
+  - name: endeavouros
+    priority: 200
+    server: https://github.com/endeavouros-team/repo/raw/master/$$repo/$$arch/
+    mirrorlist: https://raw.githubusercontent.com/endeavouros-team/PKGBUILDS/master/endeavouros-mirrorlist/endeavouros-mirrorlist
+  trust:
+  - info@endeavouros.com
+  - manuel@endeavouros.com
+  install:
+  - endeavouros/endeavouros-keyring
+  - endeavouros/endeavouros-mirrorlist
