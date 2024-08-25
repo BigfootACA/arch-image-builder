@@ -96,8 +96,8 @@ def add_file(ctx: ArchBuilderContext, file: dict):
 	# at least path content
 	if "path" not in file:
 		raise ArchBuilderConfigError("no path set in file")
-	if "content" not in file and "source" not in file:
-		raise ArchBuilderConfigError("no content or source set in file")
+	if "content" not in file and "source" not in file and "url" not in file:
+		raise ArchBuilderConfigError(f"no content, source or url set in file")
 	root = ctx.get_rootfs()
 	path: str = file["path"]
 	if path.startswith("/"): path = path[1:]
@@ -109,7 +109,7 @@ def add_file(ctx: ArchBuilderContext, file: dict):
 	# follow symbolic links
 	follow = file["follow"] if "follow" in file else True
 
-	# source is a folder 
+	# source is a folder
 	folder = file["folder"] if "folder" in file else False
 
 	# files mode
@@ -142,6 +142,10 @@ def add_file(ctx: ArchBuilderContext, file: dict):
 			shutil.copytree(src, real, symlinks=follow, dirs_exist_ok=True)
 		else:
 			shutil.copyfile(src, real, follow_symlinks=follow)
+	elif "url" in file:
+		cmds = ["wget", file["url"], "-O", real]
+		ret = ctx.run_external(cmds)
+		if ret != 0: raise OSError(f"wget failed with {ret}")
 	else:
 		assert False
 	log.debug(f"chmod file {real} to {mode:04o}")
