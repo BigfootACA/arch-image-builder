@@ -1,0 +1,33 @@
+# I18N for English (US)
+locale:
+  enable:
+  - "en_US.UTF-8 UTF-8"
+  default: en_US.UTF-8
+
+systemd:
+  enable:
+  - systemd-timesyncd
+
+filesystem:
+  files:
+  # Wireless regulatory
+  - path: /etc/conf.d/wireless-regdom
+    content: |
+      WIRELESS_REGDOM="US"
+  # Windows NTP Server
+  - path: /etc/systemd/timesyncd.conf.d/windows-ntp.conf
+    content: |
+      [Time]
+      NTP=time.windows.com
+
+sysconf:
+  environments:
+    GTK_IM_MODULE: ibus
+    QT_IM_MODULE: ibus
+    XMODIFIERS: '@im=ibus'
+    COUNTRY: US
+    LANG: en_US.UTF-8
+    LANGUAGE: en_US.UTF-8
+    LC_ALL: en_US.UTF-8
+    TZ: US/Eastern
+timezone: US/Eastern
