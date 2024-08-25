@@ -64,7 +64,7 @@ def gen_config(ctx: ArchBuilderContext, pacman: Pacman):
 	conf = os.path.join(ctx.get_rootfs(), "etc/pacman.conf")
 	lines: list[str] = []
 	append_config(ctx, lines)
-	pacman.append_repos(lines)
+	pacman.append_repos(lines, True)
 	with open_config(conf) as f:
 		f.writelines(lines)
 	log.info(f"generated pacman config {conf}")

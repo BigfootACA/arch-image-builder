@@ -52,6 +52,7 @@ class PacmanRepo(SerializableDict):
 	name: str = None
 	priority: int = 10000
 	servers: list[PacmanRepoServer] = None
+	mirrorlist: str = None
 	publickey: str = None
 	keyid: str = None
 
@@ -60,6 +61,7 @@ class PacmanRepo(SerializableDict):
 		name: str = None,
 		priority: int = None,
 		servers: list[PacmanRepoServer] = None,
+		mirrorlist: str = None,
 		publickey: str = None,
 		keyid: str = None
 	):
@@ -67,6 +69,7 @@ class PacmanRepo(SerializableDict):
 		if priority is not None: self.priority = priority
 		if servers is not None: self.servers = servers
 		else: self.servers = []
+		if mirrorlist is not None: self.mirrorlist = mirrorlist
 		if publickey is not None: self.publickey = publickey
 		if keyid is not None: self.keyid = keyid
 
@@ -92,20 +95,23 @@ class Pacman:
 	caches: list[str]
 	repos: list[PacmanRepo]
 
-	def append_repos(self, lines: list[str]):
+	def append_repos(self, lines: list[str], rootfs: bool = False):
 		"""
 		Add all databases into config
 		"""
 		for repo in self.repos:
 			lines.append(f"[{repo.name}]\n")
-			for server in repo.servers:
-				if server.mirror:
-					lines.append(f"# Mirror {server.name}\n")
-					log.debug(f"use mirror {server.name} url {server.url}")
-				else:
-					lines.append("# Original Repo\n")
-					log.debug(f"use original repo url {server.url}")
-				lines.append(f"Server = {server.url}\n")
+			if rootfs and repo.mirrorlist is not None:
+				lines.append(f"Include = /etc/pacman.d/{repo.name}-mirrorlist\n")
+			else:
+				for server in repo.servers:
+					if server.mirror:
+						lines.append(f"# Mirror {server.name}\n")
+						log.debug(f"use mirror {server.name} url {server.url}")
+					else:
+						lines.append("# Original Repo\n")
+						log.debug(f"use original repo url {server.url}")
+					lines.append(f"Server = {server.url}\n")
 
 	def append_config(self, lines: list[str]):
 		"""
@@ -142,8 +148,13 @@ class Pacman:
 		log.info("initializing pacman keyring")
 		self.pacman_key(["--init"])
 
-		# Download and add public keys
+		# Download and add public keys and mirrorlist
 		for repo in self.repos:
+			if repo.mirrorlist is not None:
+				mirrorlist = os.path.join(self.ctx.work, f"etc/pacman.d/{repo.name}-mirrorlist")
+				cmds = ["wget", repo.mirrorlist, "-O", keypath]
+				ret = self.ctx.run_external(cmds)
+				if ret != 0: raise OSError(f"wget failed with {ret}")
 			if repo.publickey is not None:
 				keypath = os.path.join(self.ctx.work, f"{repo.name}.pub")
 				cmds = ["wget", repo.publickey, "-O", keypath]
@@ -300,6 +311,9 @@ class Pacman:
 			pacman_repo = PacmanRepo(name=repo["name"])
 			if "priority" in repo:
 				pacman_repo.priority = repo["priority"]
+
+			if "mirrorlist" in repo:
+				pacman_repo.mirrorlist = repo["mirrorlist"]
 
 			# add public key url and id
 			if "publickey" in repo and "keyid" not in repo:
