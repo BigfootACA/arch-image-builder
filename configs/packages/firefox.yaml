@@ -1,0 +1,4 @@
+# Firefox
+pacman:
+  install:
+  - firefox

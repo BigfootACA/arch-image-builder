@@ -1,0 +1,10 @@
+pacman:
+  install:
+    - neovim
+    - neovide
+    - less
+sysconf:
+  environments:
+    EDITOR: nvim
+    VISUAL: neovide
+    PAGER: less

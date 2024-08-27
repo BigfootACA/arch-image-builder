@@ -2,6 +2,9 @@
 pacman:
   install:
   - plasma
+  - konsole
+  - kate
+  - dolphin
   - sddm
   - packagekit-qt6
 systemd:
@@ -17,3 +20,4 @@ filesystem:
 +also:
 # Ensure NetworkManager is enabled
 - packages/network-manager
+- packages/firefox

@@ -1,0 +1,33 @@
+# I18N for Russian
+locale:
+  enable:
+  - "ru_RU.UTF-8 UTF-8"
+  - "en_US.UTF-8 UTF-8"
+  default: en_US.UTF-8
+
+systemd:
+  enable:
+  - systemd-timesyncd
+
+filesystem:
+  files:
+  # Wireless regulatory
+  - path: /etc/conf.d/wireless-regdom
+    content: |
+      WIRELESS_REGDOM="RU"
+  - path: /etc/systemd/timesyncd.conf.d/ntp-pool-ntp.conf
+    content: |
+      [Time]
+      NTP=0.ru.pool.ntp.org
+
+sysconf:
+  environments:
+    GTK_IM_MODULE: ibus
+    QT_IM_MODULE: ibus
+    XMODIFIERS: '@im=ibus'
+    COUNTRY: RU
+    LANG: ru_RU.UTF-8
+    LANGUAGE: ru_RU.UTF-8
+    LC_ALL: ru_RU.UTF-8
+    TZ: Europe/Moscow
+timezone: Europe/Moscow
