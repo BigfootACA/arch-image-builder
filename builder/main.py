@@ -1,7 +1,6 @@
 import os
 import logging
 from sys import stdout
-from locale import setlocale, LC_ALL
 from argparse import ArgumentParser
 from builder.build import bootstrap
 from builder.lib import config, utils
@@ -58,17 +57,6 @@ def parse_arguments(ctx: ArchBuilderContext):
 	ctx.work = os.path.realpath(os.path.join(args.workspace, ctx.target))
 
 
-def init_environment():
-	# set user agent for pacman (some mirrors requires)
-	os.environ["HTTP_USER_AGENT"] = "arch-image-builder(pacman) pyalpm"
-
-	# set to default language to avoid problems
-	os.environ["LANG"] = "C"
-	os.environ["LANGUAGE"] = "C"
-	os.environ["LC_ALL"] = "C"
-	setlocale(LC_ALL, "C")
-
-
 def check_system():
 	# why not root?
 	if os.getuid() != 0:
@@ -96,7 +84,7 @@ def done_package(ctx: ArchBuilderContext):
 def main():
 	logging.basicConfig(stream=stdout, level=logging.INFO)
 	check_system()
-	init_environment()
+	utils.init_environment()
 	ctx = ArchBuilderContext()
 	ctx.dir = os.path.realpath(os.path.join(os.path.dirname(__file__), os.path.pardir))
 	ctx.work = os.path.realpath(os.path.join(ctx.dir, "build"))

@@ -3,8 +3,20 @@ import io
 import shlex
 import shutil
 import typing
+from locale import setlocale, LC_ALL
 from logging import getLogger
 log = getLogger(__name__)
+
+
+def init_environment():
+	# set user agent for pacman (some mirrors requires)
+	os.environ["HTTP_USER_AGENT"] = "arch-image-builder(pacman) pyalpm"
+
+	# set to default language to avoid problems
+	os.environ["LANG"] = "C"
+	os.environ["LANGUAGE"] = "C"
+	os.environ["LC_ALL"] = "C"
+	setlocale(LC_ALL, "C")
 
 
 def str_find_all(
