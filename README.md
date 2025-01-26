@@ -4,8 +4,6 @@ A tool to build flashable and bootable image for Arch Linux
 
 ## Install requirements
 
-Currently only support Arch based distros
-
 ### Arch Linux
 
 Install required packages
@@ -18,6 +16,24 @@ For cross build (UNTESTED)
 
 ```commandline
 pacman -S qemu-user-static-binfmt
+```
+
+### Debian / Ubuntu (Debian-based)
+
+Install required packages
+
+```commandline
+apt update
+apt install -y pacman-package-manager gpg gpg-agent libalpm-dev libssl-dev libarchive-dev libgpgme-dev libcurl4-openssl-dev libmount-dev p7zip rsync python3-pip python3-venv
+python3 -m venv .venv
+source .venv/bin/activate
+python3 -m pip install -r requirements.txt
+```
+
+For cross build (UNTESTED)
+
+```commandline
+apt install -y qemu-user-static
 ```
 
 ## Example
