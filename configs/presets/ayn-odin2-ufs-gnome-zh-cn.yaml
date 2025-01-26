@@ -4,3 +4,6 @@ package:
   - target/ayn-odin2-ufs
   - locale/zh-cn
   - desktop/gnome
+workflows:
+  auto: yes
+  arch: aarch64

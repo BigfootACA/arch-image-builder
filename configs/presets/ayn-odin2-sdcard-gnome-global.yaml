@@ -3,3 +3,6 @@ package:
   configs:
   - target/ayn-odin2-sdcard
   - desktop/gnome
+workflows:
+  auto: yes
+  arch: aarch64

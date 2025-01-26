@@ -3,3 +3,6 @@ package:
   configs:
   - target/ayn-odin2-ufs
   - desktop/gnome
+workflows:
+  auto: yes
+  arch: aarch64
