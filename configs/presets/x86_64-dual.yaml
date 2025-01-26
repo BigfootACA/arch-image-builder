@@ -1,0 +1,4 @@
+package:
+  file: ArchLinux-x86_64-${version}.7z
+  configs:
+  - target/x86_64-dual
