@@ -1,8 +1,8 @@
 import os
-import yaml
 from logging import getLogger
 from builder.lib import json
 from builder.lib.cpu import cpu_arch_compatible
+from builder.lib.utils import load_simple
 from builder.lib.context import ArchBuilderContext
 log = getLogger(__name__)
 
@@ -31,19 +31,7 @@ def load_config_file(ctx: ArchBuilderContext, path: str):
 	"""
 	Load one config (yaml/json) to context
 	"""
-	log.debug(f"try to open config {path}")
-	try:
-		with open(path, "r") as f:
-			if path.endswith((".yml", ".yaml")):
-				log.debug(f"load {path} as yaml")
-				loaded = yaml.safe_load(f)
-			elif path.endswith((".jsn", ".json")):
-				log.debug(f"load {path} as json")
-				loaded = json.load(f)
-		log.info(f"loaded config {path}")
-	except BaseException:
-		log.error(f"failed to load config {path}")
-		raise
+	loaded = load_simple(path)
 	def _proc_include(inc: str | list[str]):
 		pt = type(inc)
 		if pt is str: inc = [inc]

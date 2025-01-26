@@ -1,9 +1,11 @@
 import os
 import io
+import yaml
 import shlex
 import shutil
 import typing
 from locale import setlocale, LC_ALL
+from builder.lib import json
 from logging import getLogger
 log = getLogger(__name__)
 
@@ -17,6 +19,23 @@ def init_environment():
 	os.environ["LANGUAGE"] = "C"
 	os.environ["LC_ALL"] = "C"
 	setlocale(LC_ALL, "C")
+
+
+def load_simple(path: str):
+	log.debug(f"try to open config {path}")
+	try:
+		with open(path, "r") as f:
+			if path.endswith((".yml", ".yaml")):
+				log.debug(f"load {path} as yaml")
+				loaded = yaml.safe_load(f)
+			elif path.endswith((".jsn", ".json")):
+				log.debug(f"load {path} as json")
+				loaded = json.load(f)
+		log.info(f"loaded config {path}")
+	except BaseException:
+		log.error(f"failed to load config {path}")
+		raise
+	return loaded
 
 
 def str_find_all(
