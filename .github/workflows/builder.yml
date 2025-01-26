@@ -1,0 +1,68 @@
+name: Build images
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+  workflow_dispatch:
+
+jobs:
+  prepare-matrix:
+    runs-on: ubuntu-24.04
+    outputs:
+      presets: ${{ steps.set-matrix.outputs.presets }}
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Generate matrix
+        id: set-matrix
+        run: |
+          set -o pipefail
+          echo "presets=$(./workflow.py --debug --list-presets --filter-auto)" >> $GITHUB_OUTPUT
+
+  build:
+    needs: prepare-matrix
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      matrix:
+        include:
+          ${{ fromJson(needs.prepare-matrix.outputs.presets) }}
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Install dependencies and setup venv
+        run: |
+          sudo apt update
+          sudo apt install -y pacman-package-manager gpg gpg-agent wget libalpm-dev libssl-dev libarchive-dev libgpgme-dev libcurl4-openssl-dev libmount-dev p7zip rsync python3-pip python3-venv
+          python3 -m venv .venv
+          source .venv/bin/activate
+          python3 -m pip install -r requirements.txt
+
+      - name: Build images
+        run: |
+          sudo bash -ex <<-EOF
+          source .venv/bin/activate
+          gpgconf --kill gpg-agent || true
+          mkdir -p /build
+          python3 ./build.py -C -p ${{ matrix.preset }} -d -a artifacts -o /build
+          EOF
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.preset }}
+          path: artifacts/*.7z
+
+      - name: Cache pacman packages
+        uses: actions/cache@v4
+        if: always()
+        env:
+          cache-name: cache-pacman
+        with:
+          path: /var/cache/pacman/pkg/
+          key: ${{ matrix.arch }}-packages
+          restore-keys: |
+            ${{ matrix.arch }}-packages
