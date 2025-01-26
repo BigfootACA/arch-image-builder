@@ -1,11 +1,34 @@
 import io
 import os
-import libmount
+import ctypes
 from typing import Self
 from logging import getLogger
 from builder.lib.blkid import Blkid
 from builder.lib.serializable import SerializableDict, SerializableList
 log = getLogger(__name__)
+libmount_so = ctypes.CDLL("libmount.so")
+libmount_so.mnt_new_context.restype = ctypes.c_void_p
+libmount_so.mnt_free_context.argtypes = [ctypes.c_void_p]
+libmount_so.mnt_context_get_target.restype = ctypes.c_char_p
+libmount_so.mnt_context_get_target.argtypes = [ctypes.c_void_p]
+libmount_so.mnt_context_get_source.restype = ctypes.c_char_p
+libmount_so.mnt_context_get_source.argtypes = [ctypes.c_void_p]
+libmount_so.mnt_context_get_fstype.restype = ctypes.c_char_p
+libmount_so.mnt_context_get_fstype.argtypes = [ctypes.c_void_p]
+libmount_so.mnt_context_get_options.restype = ctypes.c_char_p
+libmount_so.mnt_context_get_options.argtypes = [ctypes.c_void_p]
+libmount_so.mnt_context_set_target.restype = ctypes.c_int
+libmount_so.mnt_context_set_target.argtypes = [ctypes.c_void_p, ctypes.c_char_p]
+libmount_so.mnt_context_set_source.restype = ctypes.c_int
+libmount_so.mnt_context_set_source.argtypes = [ctypes.c_void_p, ctypes.c_char_p]
+libmount_so.mnt_context_set_fstype.restype = ctypes.c_int
+libmount_so.mnt_context_set_fstype.argtypes = [ctypes.c_void_p, ctypes.c_char_p]
+libmount_so.mnt_context_set_options.restype = ctypes.c_int
+libmount_so.mnt_context_set_options.argtypes = [ctypes.c_void_p, ctypes.c_char_p]
+libmount_so.mnt_context_mount.restype = ctypes.c_int
+libmount_so.mnt_context_mount.argtypes = [ctypes.c_void_p]
+libmount_so.mnt_context_umount.restype = ctypes.c_int
+libmount_so.mnt_context_umount.argtypes = [ctypes.c_void_p]
 
 virtual_fs = [
 	"sysfs", "tmpfs", "proc", "cgroup", "cgroup2", "hugetlbfs",
@@ -21,6 +44,58 @@ real_fs = [
 	"befs", "ocfs2", "btrfs", "hfs", "gfs2", "udf", "f2fs", "bcachefs", "erofs",
 ]
 
+class LibMountContext:
+	def __init__(self):
+		self._context = libmount_so.mnt_new_context()
+		if not self._context:
+			raise OSError("new context failed")
+
+	def __del__(self):
+		libmount_so.mnt_free_context(self._context)
+
+	@property
+	def target(self) -> str:
+		return libmount_so.mnt_context_get_target(self._context).decode()
+
+	@property
+	def source(self) -> str:
+		return libmount_so.mnt_context_get_source(self._context).decode()
+
+	@property
+	def fstype(self) -> str:
+		return libmount_so.mnt_context_get_fstype(self._context).decode()
+
+	@property
+	def options(self) -> str:
+		return libmount_so.mnt_context_get_options(self._context).decode()
+
+	@target.setter
+	def target(self, value: str):
+		ret = libmount_so.mnt_context_set_target(self._context, value.encode())
+		if ret != 0: raise OSError(f"call failed: {ret}")
+
+	@source.setter
+	def source(self, value: str):
+		ret = libmount_so.mnt_context_set_source(self._context, value.encode())
+		if ret != 0: raise OSError(f"call failed: {ret}")
+
+	@fstype.setter
+	def fstype(self, value: str):
+		ret = libmount_so.mnt_context_set_fstype(self._context, value.encode())
+		if ret != 0: raise OSError(f"call failed: {ret}")
+
+	@options.setter
+	def options(self, value: str):
+		ret = libmount_so.mnt_context_set_options(self._context, value.encode())
+		if ret != 0: raise OSError(f"call failed: {ret}")
+
+	def mount(self):
+		ret = libmount_so.mnt_context_mount(self._context)
+		if ret != 0: raise OSError(f"call failed: {ret}")
+
+	def umount(self):
+		ret = libmount_so.mnt_context_umount(self._context)
+		if ret != 0: raise OSError(f"call failed: {ret}")
 
 class MountPoint(SerializableDict):
 	device: str = None
@@ -174,11 +249,11 @@ class MountPoint(SerializableDict):
 			None, tag, self.device
 		)
 
-	def tolibmount(self) -> libmount.Context:
+	def tolibmount(self) -> LibMountContext:
 		"""
 		To util-linux libmount context
 		"""
-		mnt = libmount.Context()
+		mnt = LibMountContext()
 		mnt.target = self.target
 		if self.have_source(): mnt.source = self.source
 		if self.have_fstype(): mnt.fstype = self.fstype
