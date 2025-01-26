@@ -22,6 +22,14 @@ pacman -S qemu-user-static-binfmt
 
 ## Example
 
+### Build using preset
+
+```commandline
+python build.py -p ayn-odin2-ufs-gnome-global -m bfsu,tuna
+```
+
+### Manual build
+
 ```commandline
 python build.py -c target/ayn-odin2-sdcard,locale/zh-cn,desktop/gnome -m bfsu,tuna
 ```
