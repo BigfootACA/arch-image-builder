@@ -159,9 +159,12 @@ class ArchBuilderContext:
 		if cgroup is None: cgroup = self.cgroup
 		cgroup.add_pid(proc.pid)
 		if stdin:
-			if type(stdin) is str: stdin = stdin.encode()
-			proc.stdin.write(stdin)
-			proc.stdin.close()
+			try:
+				if type(stdin) is str: stdin = stdin.encode()
+				proc.stdin.write(stdin)
+				proc.stdin.close()
+			except BrokenPipeError:
+				pass
 		ret = proc.wait()
 		log.debug(f"command exit with {ret}")
 		if not want_stdout:
