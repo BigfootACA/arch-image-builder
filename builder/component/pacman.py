@@ -153,7 +153,7 @@ class Pacman:
 		for repo in self.repos:
 			if repo.mirrorlist is not None:
 				mirrorlist = os.path.join(self.ctx.work, f"etc/pacman.d/{repo.name}-mirrorlist")
-				cmds = ["wget", repo.mirrorlist, "-O", keypath]
+				cmds = ["wget", repo.mirrorlist, "-O", mirrorlist]
 				ret = self.ctx.run_external(cmds)
 				if ret != 0: raise OSError(f"wget failed with {ret}")
 			if repo.publickey is not None:
