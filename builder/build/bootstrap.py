@@ -97,14 +97,17 @@ def build_rootfs(ctx: ArchBuilderContext):
 			# initialize build time keyring
 			pacman.init_keyring()
 
-			# trust pgp key in config (for pacman database)
-			pacman_build.trust_all(ctx, pacman)
+			# trust pgp key in config (for pacman database, allow failed)
+			pacman_build.trust_all(ctx, pacman, True)
 
 			# update pacman repos databases
 			pacman.load_databases()
 
 			# install all keyring packages before other packages
 			pacman_build.proc_pacman_keyring(ctx, pacman)
+
+			# trust pgp key in config
+			pacman_build.trust_all(ctx, pacman)
 
 			# running add files hooks (for pacman settings)
 			filesystem.add_files_all(ctx, "pre-pacman")

@@ -192,11 +192,12 @@ class Pacman:
 		]
 		self.write_config("pacman-nogpg.conf", lines_nogpg)
 
-	def pacman(self, args: list[str]):
+	def pacman(self, args: list[str], nogpg: bool=False):
 		"""
 		Call pacman for rootfs
 		"""
-		config = os.path.join(self.ctx.work, "pacman.conf")
+		config_name = "pacman-nogpg.conf" if nogpg else "pacman.conf"
+		config = os.path.join(self.ctx.work, config_name)
 		cmds = ["pacman"]
 		cmds.append("--noconfirm")
 		cmds.append(f"--root={self.root}")
@@ -429,7 +430,7 @@ class Pacman:
 		args.extend(pkgs)
 		self.pacman(args)
 
-	def download(self, pkgs: list[str]):
+	def download(self, pkgs: list[str], nogpg: bool=False):
 		"""
 		Download packages via pacman
 		"""
@@ -440,7 +441,7 @@ class Pacman:
 		log.info("downloading packages %s", " ".join(pkgs))
 		args = ["--sync", "--downloadonly", "--nodeps", "--nodeps"]
 		args.extend(pkgs)
-		self.pacman(args)
+		self.pacman(args, nogpg=nogpg)
 
 	def install_local(self, files: list[str]):
 		"""
@@ -517,13 +518,13 @@ class Pacman:
 		# trust extracted keyring
 		self.pacman_key.pouplate_keys(names, target)
 
-	def add_trust_keyring_pkg(self, pkgnames: list[str]):
+	def add_trust_keyring_pkg(self, pkgnames: list[str], nogpg: bool=False):
 		"""
 		Trust a keyring package from file without install it
 		"""
 		if not self.ctx.gpgcheck: return
 		if len(pkgnames) <= 0: return
-		self.download(pkgnames)
+		self.download(pkgnames, nogpg=nogpg)
 		for pkgname in pkgnames:
 			pkgs = self.lookup_package(pkgname)
 			for pkg in pkgs:

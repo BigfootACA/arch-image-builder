@@ -28,7 +28,7 @@ def install_all_keyring(ctx: ArchBuilderContext, pacman: Pacman):
 	if len(keyrings) <= 0: return
 
 	log.info("installing keyrings: %s", " ".join(keyrings))
-	pacman.add_trust_keyring_pkg(keyrings)
+	pacman.add_trust_keyring_pkg(keyrings, nogpg=True)
 
 
 def uninstall_all(ctx: ArchBuilderContext, pacman: Pacman):
