@@ -1,0 +1,5 @@
+[FORMAT]
+indent-string=\t
+max-line-length=120
+[MESSAGES CONTROL]
+disable=C0111,C0321,W0702,W1203,R0903
