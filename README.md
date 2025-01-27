@@ -64,6 +64,21 @@ python build.py -c target/ayn-odin2-sdcard,locale/zh-cn,desktop/gnome -m bfsu,tu
 | -G, --no-gpgcheck                   | Disable GPG check                  |
 | -r, --repack                        | Repack rootfs only                 |
 
+## Known issues
+
+### Failed to start gpg-agent
+
+```
+gpg: starting migration from earlier GnuPG versions
+gpg: error running '/usr/bin/gpg-agent': exit status 2
+gpg: failed to start gpg-agent '/usr/bin/gpg-agent': General error
+gpg: can't connect to the gpg-agent: General error
+gpg: error: GnuPG agent unusable. Please check that a GnuPG agent can be started.
+gpg: migration aborted
+```
+
+gpg-agent unix socket path too long, please use shorter path for workspace
+
 ## License
 
 SPDX: GPL-3.0-or-later
