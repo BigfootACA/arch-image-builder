@@ -143,8 +143,9 @@ class ArchBuilderContext:
 		cwd: str = None,
 		env: dict = None,
 		stdin: str | bytes = None,
+		want_stdout: bool = False,
 		cgroup: CGroup = None,
-	) -> int:
+	) -> int | tuple[int, str]:
 		"""
 		Run external command
 		run_external("mke2fs -t ext4 ext4.img")
@@ -153,7 +154,8 @@ class ArchBuilderContext:
 		argv = " ".join(args)
 		log.debug(f"running external command {argv}")
 		fstdin = None if stdin is None else PIPE
-		proc = Popen(args, cwd=cwd, env=env, stdin=fstdin)
+		fstdout = None if not want_stdout else PIPE
+		proc = Popen(args, cwd=cwd, env=env, stdin=fstdin, stdout=fstdout)
 		if cgroup is None: cgroup = self.cgroup
 		cgroup.add_pid(proc.pid)
 		if stdin:
@@ -162,7 +164,10 @@ class ArchBuilderContext:
 			proc.stdin.close()
 		ret = proc.wait()
 		log.debug(f"command exit with {ret}")
-		return ret
+		if not want_stdout:
+			return ret
+		stdout = proc.stdout.read().decode()
+		return (ret, stdout)
 
 	def reload_passwd(self):
 		"""
