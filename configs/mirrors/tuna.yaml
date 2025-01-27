@@ -24,3 +24,8 @@ mirrors:
   - name: blackarch
     original: https://www.blackarch.org/blackarch/
     mirror: https://mirrors.tuna.tsinghua.edu.cn/blackarch/
+
+  # EndeavourOS
+  - name: endeavouros
+    original: https://github.com/endeavouros-team/repo/tree/master/
+    mirror: https://mirrors.tuna.tsinghua.edu.cn/endeavouros/repo/
