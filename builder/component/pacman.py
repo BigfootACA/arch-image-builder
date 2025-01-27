@@ -95,6 +95,7 @@ class Pacman:
 	config: dict
 	caches: list[str]
 	repos: list[PacmanRepo]
+	package_map: dict[str: str] = None
 
 	def append_repos(self, lines: list[str], rootfs: bool = False):
 		"""
@@ -241,7 +242,7 @@ class Pacman:
 		self.init_config()
 		self.refresh()
 
-	def lookup_package(self, name: str) -> list[pyalpm.Package]:
+	def lookup_package(self, name: str, map: bool=False) -> list[pyalpm.Package]:
 		"""
 		Lookup pyalpm package by name
 		"""
@@ -258,23 +259,38 @@ class Pacman:
 			if s[0] not in self.databases and s[0] != "local":
 				raise ValueError(f"database {s[0]} not found")
 			db = (self.handle.get_localdb() if s[0] == "local" else self.databases[s[0]])
-			pkg = db.get_pkg(s[1])
+			name = s[1]
+			pkg = db.get_pkg(name)
 			if pkg: return [pkg]
-			raise ValueError(f"package {s[1]} not found")
 		elif len(s) == 1:
 			# use PACKAGE, find it in all databases or find as group
+			pkgs = []
 
 			# try find it as group
 			pkg = pyalpm.find_grp_pkgs(self.databases.values(), name)
-			if len(pkg) > 0: return pkg
+			if len(pkg) > 0: pkgs.extend(pkg)
 
 			# try find it as package
 			for dbn in self.databases:
 				db = self.databases[dbn]
 				pkg = db.get_pkg(name)
-				if pkg: return [pkg]
-			raise ValueError(f"package {name} not found")
-		raise ValueError(f"bad package name {name}")
+				if pkg: pkgs.append(pkg)
+			if len(pkgs) > 0: return pkgs
+
+		# package provides
+		if not map:
+			if name in self.package_map:
+				pkg = self.package_map[name]
+				return self.lookup_package(pkg, map=True)
+			for dbn in self.databases:
+				db = self.databases[dbn]
+				pkg = pyalpm.find_satisfier(db.pkgcache, name)
+				if not pkg: continue
+				full = f"{db.name}/{pkg.name}"
+				self.package_map[name] = full
+				return [pkg]
+
+		raise ValueError(f"package {name} not found")
 
 	def init_cache(self):
 		"""
@@ -397,6 +413,7 @@ class Pacman:
 		self.handle.dlcb = dl_cb
 		self.handle.progresscb = progress_cb
 		self.databases = {}
+		self.package_map = {}
 		self.caches = []
 		self.repos = []
 		self.pacman_key = PacmanKey(ctx)
