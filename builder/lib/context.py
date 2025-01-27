@@ -59,6 +59,11 @@ class ArchBuilderContext:
 	work: str = None
 
 	"""
+	Artifacts folder
+	"""
+	artifacts: str = None
+
+	"""
 	Current mounted list
 	"""
 	mounted: MountTab = MountTab()

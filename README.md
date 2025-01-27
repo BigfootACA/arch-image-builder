@@ -43,6 +43,7 @@ python build.py -c target/ayn-odin2-sdcard,locale/zh-cn,desktop/gnome -m bfsu,tu
 | -p PRESET, --preset PRESET          | Select preset to create package    |
 | -c CONFIG, --config CONFIG          | Select configs to build            |
 | -o WORKSPACE, --workspace WORKSPACE | Set workspace for builder          |
+| -a ARTIFACTS, --artifacts ARTIFACTS | Set artifacts folder for builder   |
 | -d, --debug                         | Enable debug logging               |
 | -G, --no-gpgcheck                   | Disable GPG check                  |
 | -r, --repack                        | Repack rootfs only                 |

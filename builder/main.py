@@ -19,6 +19,7 @@ def parse_arguments(ctx: ArchBuilderContext):
 	parser.add_argument("-c", "--config",      help="Select config to build", action='append')
 	parser.add_argument("-m", "--mirror",      help="Select mirror to download package", action='append')
 	parser.add_argument("-o", "--workspace",   help="Set workspace for builder", default=ctx.work)
+	parser.add_argument("-a", "--artifacts",   help="Set artifacts folder for builder", default=ctx.artifacts)
 	parser.add_argument("-d", "--debug",       help="Enable debug logging", default=False, action='store_true')
 	parser.add_argument("-G", "--no-gpgcheck", help="Disable GPG check", default=False, action='store_true')
 	parser.add_argument("-r", "--repack",      help="Repack rootfs only", default=False, action='store_true')
@@ -56,6 +57,9 @@ def parse_arguments(ctx: ArchBuilderContext):
 	# build folder: {TOP}/build/{TARGET}
 	ctx.work = os.path.realpath(os.path.join(args.workspace, ctx.target))
 
+	if args.artifacts:
+		ctx.artifacts = os.path.realpath(args.artifacts)
+
 
 def check_system():
 	# why not root?
@@ -71,7 +75,9 @@ def done_package(ctx: ArchBuilderContext):
 	file: str = ctx.get("package.file", "")
 	out = file
 	if not out.startswith("/"):
-		out = os.path.join(ctx.work, file)
+		if not os.path.exists(ctx.artifacts):
+			os.makedirs(ctx.artifacts, mode=0o755, exist_ok=True)
+		out = os.path.join(ctx.artifacts, file)
 	if not out.endswith(".7z"):
 		raise ArchBuilderConfigError("current only supports 7z")
 	log.info(f"creating package {file}")
@@ -88,6 +94,7 @@ def main():
 	ctx = ArchBuilderContext()
 	ctx.dir = os.path.realpath(os.path.join(os.path.dirname(__file__), os.path.pardir))
 	ctx.work = os.path.realpath(os.path.join(ctx.dir, "build"))
+	ctx.artifacts = ctx.work
 	parse_arguments(ctx)
 	log.info(f"package version:    {ctx.version}")
 	log.info(f"source tree folder: {ctx.dir}")
