@@ -167,20 +167,30 @@ class Pacman:
 				self.pacman_key.recv_keys(repo.keyid)
 				self.pacman_key.lsign_key(repo.keyid)
 
-	def init_config(self):
-		"""
-		Create host pacman.conf
-		"""
-		config = os.path.join(self.ctx.work, "pacman.conf")
+	def write_config(self, name: str, lines: list[str]) -> str:
+		config = os.path.join(self.ctx.work, name)
 		if os.path.exists(config):
 			os.remove(config)
 		log.info(f"generate pacman config {config}")
-		lines = []
-		self.append_config(lines)
 		log.debug("config content: %s", "\t".join(lines).strip())
 		log.debug(f"writing {config}")
 		with open(config, "w") as f:
 			f.writelines(lines)
+		return config
+
+	def init_config(self):
+		"""
+		Create host pacman.conf and pacman-nogpg.conf
+		"""
+		lines_main = []
+		self.append_config(lines_main)
+		config_main = self.write_config("pacman.conf", lines_main)
+		lines_nogpg = [
+			f"Include = {config_main}\n",
+			"[options]\n",
+			"SigLevel = Never\n"
+		]
+		self.write_config("pacman-nogpg.conf", lines_nogpg)
 
 	def pacman(self, args: list[str]):
 		"""
