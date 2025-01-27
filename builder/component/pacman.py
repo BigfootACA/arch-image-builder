@@ -469,7 +469,7 @@ class Pacman:
 		if len(pkgs) == 0: return
 		ps = " ".join(pkgs)
 		log.info(f"installing packages {ps}")
-		self.download(pkgs)
+		self.download_all(pkgs)
 		args = ["--sync"]
 		if not force: args.append("--needed")
 		if asdeps: args.append("--asdeps")
@@ -499,6 +499,17 @@ class Pacman:
 					tries += 1
 					continue
 				raise
+
+	def download_all(self, pkgs: list[str]):
+		"""
+		Download packages and all dependencies
+		"""
+		pkg_once = 100
+		packages: list[str] = []
+		for pkg in pkgs:
+			self.lookup_package_depends(pkg, packages)
+		for once in range(0, len(packages), pkg_once):
+			self.download(packages[once:once + pkg_once])
 
 	def install_local(self, files: list[str]):
 		"""
