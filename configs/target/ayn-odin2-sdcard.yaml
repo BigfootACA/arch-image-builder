@@ -9,7 +9,7 @@ image:
 - type: disk
   output: sdcard.img
   layout: gpt
-  size: 6GiB
+  size: 8GiB
   sector: 512
   partitions:
   - type: filesystem
