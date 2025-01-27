@@ -94,7 +94,7 @@ def trust_all(ctx: ArchBuilderContext, pacman: Pacman):
 	trust = ctx.get("pacman.trust", [])
 
 	# receive all keys now
-	pacman.recv_keys(trust)
+	pacman.pacman_key.recv_keys(trust)
 
 	# local sign keys
-	for key in trust: pacman.lsign_key(key)
+	for key in trust: pacman.pacman_key.lsign_key(key)

@@ -8,6 +8,7 @@ from builder.lib.serializable import SerializableDict
 from builder.lib.context import ArchBuilderContext
 from builder.lib.config import ArchBuilderConfigError
 from builder.lib.subscript import resolve_simple_values
+from builder.component.pacman_key import PacmanKey
 log = getLogger(__name__)
 
 
@@ -146,7 +147,7 @@ class Pacman:
 			log.debug("skip initialize pacman keyring when exists")
 			return
 		log.info("initializing pacman keyring")
-		self.pacman_key(["--init"])
+		self.pacman_key.initialize()
 
 		# Download and add public keys and mirrorlist
 		for repo in self.repos:
@@ -160,11 +161,11 @@ class Pacman:
 				cmds = ["wget", repo.publickey, "-O", keypath]
 				ret = self.ctx.run_external(cmds)
 				if ret != 0: raise OSError(f"wget failed with {ret}")
-				self.pacman_key(["--add", keypath])
+				self.pacman_key.add_keys_from(keypath)
 				self.lsign_key(repo.keyid)
 			elif repo.keyid is not None:
-				self.recv_keys(repo.keyid)
-				self.lsign_key(repo.keyid)
+				self.pacman_key.recv_keys(repo.keyid)
+				self.pacman_key.lsign_key(repo.keyid)
 
 	def init_config(self):
 		"""
@@ -180,21 +181,6 @@ class Pacman:
 		log.debug(f"writing {config}")
 		with open(config, "w") as f:
 			f.writelines(lines)
-
-	def pacman_key(self, args: list[str]):
-		"""
-		Call pacman-key for rootfs
-		"""
-		if not self.ctx.gpgcheck:
-			raise RuntimeError("GPG check disabled")
-		keyring = os.path.join(self.root, "etc/pacman.d/gnupg")
-		config = os.path.join(self.ctx.work, "pacman.conf")
-		cmds = ["pacman-key"]
-		cmds.append(f"--gpgdir={keyring}")
-		cmds.append(f"--config={config}")
-		cmds.extend(args)
-		ret = self.ctx.run_external(cmds)
-		if ret != 0: raise OSError(f"pacman-key failed with {ret}")
 
 	def pacman(self, args: list[str]):
 		"""
@@ -391,6 +377,7 @@ class Pacman:
 		self.databases = {}
 		self.caches = []
 		self.repos = []
+		self.pacman_key = PacmanKey(ctx)
 		self.init_cache()
 		self.init_repos()
 		for cache in self.caches:
@@ -464,41 +451,6 @@ class Pacman:
 		if force: args.append("--refresh")
 		self.pacman(args)
 
-	def recv_keys(self, keys: str | list[str]):
-		"""
-		Receive a key via pacman-key
-		"""
-		args = ["--recv-keys"]
-		if type(keys) is str:
-			args.append(keys)
-		elif type(keys) is list:
-			if len(keys) <= 0: return
-			args.extend(keys)
-		else: raise TypeError("bad keys type")
-		self.pacman_key(args)
-
-	def lsign_key(self, key: str):
-		"""
-		Local sign a key via pacman-key
-		"""
-		self.pacman_key(["--lsign-key", key])
-
-	def pouplate_keys(
-		self,
-		names: str | list[str] = None,
-		folder: str = None
-	):
-		"""
-		Populate all keys via pacman-key
-		"""
-		args = ["--populate"]
-		if folder: args.extend(["--populate-from", folder])
-		if names is None: pass
-		elif type(names) is str: args.append(names)
-		elif type(names) is list: args.extend(names)
-		else: raise TypeError("bad names type")
-		self.pacman_key(args)
-
 	def find_package_file(self, pkg: pyalpm.Package) -> str | None:
 		"""
 		Find out pacman package archive file in cache
@@ -553,7 +505,7 @@ class Pacman:
 					os.fchown(fd, file.uid, file.gid)
 
 		# trust extracted keyring
-		self.pouplate_keys(names, target)
+		self.pacman_key.pouplate_keys(names, target)
 
 	def add_trust_keyring_pkg(self, pkgnames: list[str]):
 		"""
