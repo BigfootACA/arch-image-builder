@@ -292,6 +292,27 @@ class Pacman:
 
 		raise ValueError(f"package {name} not found")
 
+	def lookup_package_depends(self, name: str, tree: list[str]):
+		"""
+		Lookup pyalpm package and all dependencies
+		"""
+
+		if ".pkg.tar." in name:
+			raise ValueError("local package unsupported")
+		if "/" in name and name in tree:
+			return
+		try:
+			pkgs = self.lookup_package(name)
+		except:
+			log.warning(f"package {name} not found")
+			return
+		for pkg in pkgs:
+			full = f"{pkg.db.name}/{pkg.name}"
+			if full in tree: continue
+			tree.append(full)
+			for depend in pkg.depends:
+				self.lookup_package_depends(depend, tree)
+
 	def init_cache(self):
 		"""
 		Initialize pacman cache folder
