@@ -1,4 +1,5 @@
 import os
+import sys
 import shutil
 from logging import getLogger
 from builder.disk import image
@@ -43,11 +44,12 @@ def do_copy(ctx: ArchBuilderContext, src: str, dst: str):
 	rsrc = os.path.realpath(src)
 	rdst = os.path.realpath(dst)
 	log.info("start copying rootfs...")
-	ret = ctx.run_external([
-		"rsync", "--archive", "--recursive",
-		"--delete", "--info=progress2",
-		rsrc + os.sep, rdst
-	])
+	args = ["rsync", "--archive", "--recursive", "--delete"]
+	if os.isatty(sys.stdout.fileno()):
+		args.append("--info=progress2")
+	args.append(rsrc + os.sep)
+	args.append(rdst)
+	ret = ctx.run_external(args)
 	os.sync()
 	if ret != 0: raise OSError("rsync failed")
 
