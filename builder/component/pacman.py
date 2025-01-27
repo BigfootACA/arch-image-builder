@@ -112,7 +112,8 @@ class Pacman:
 					else:
 						lines.append("# Original Repo\n")
 						log.debug(f"use original repo url {server.url}")
-					lines.append(f"Server = {server.url}\n")
+					for _ in range(self.ctx.retry_count):
+						lines.append(f"Server = {server.url}\n")
 
 	def append_config(self, lines: list[str]):
 		"""
@@ -224,9 +225,19 @@ class Pacman:
 				servers.append(server.url)
 			db.servers = servers
 
-			# update database now via pyalpm
-			log.info(f"updating database {mirror.name}")
-			db.update(False)
+			tries = 0
+			while True:
+				try:
+					# update database now via pyalpm
+					log.info(f"updating database {mirror.name}")
+					db.update(False)
+					break
+				except:
+					if tries < self.ctx.retry_count:
+						log.warning("update database failed, retry...", exc_info=True)
+						tries += 1
+						continue
+					raise
 		self.init_config()
 		self.refresh()
 
@@ -418,11 +429,9 @@ class Pacman:
 		Install packages via pacman
 		"""
 		if len(pkgs) == 0: return
-		core_db = "var/lib/pacman/sync/core.db"
-		if not os.path.exists(os.path.join(self.root, core_db)):
-			self.refresh()
 		ps = " ".join(pkgs)
 		log.info(f"installing packages {ps}")
+		self.download(pkgs)
 		args = ["--sync"]
 		if not force: args.append("--needed")
 		if asdeps: args.append("--asdeps")
@@ -441,7 +450,17 @@ class Pacman:
 		log.info("downloading packages %s", " ".join(pkgs))
 		args = ["--sync", "--downloadonly", "--nodeps", "--nodeps"]
 		args.extend(pkgs)
-		self.pacman(args, nogpg=nogpg)
+		tries = 0
+		while True:
+			try:
+				self.pacman(args, nogpg=nogpg)
+				break
+			except:
+				if tries < self.ctx.retry_count:
+					log.warning("download packages failed, retry...", exc_info=True)
+					tries += 1
+					continue
+				raise
 
 	def install_local(self, files: list[str]):
 		"""

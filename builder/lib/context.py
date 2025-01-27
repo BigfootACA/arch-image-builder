@@ -109,6 +109,11 @@ class ArchBuilderContext:
 	"""
 	version: str = datetime.now().strftime('%Y%m%d%H%M%S')
 
+	"""
+	Pacman download retry count
+	"""
+	retry_count: int = 5
+
 	def get(self, key: str, default=None):
 		"""
 		Get config value
