@@ -296,18 +296,23 @@ class Pacman:
 		"""
 		Lookup pyalpm package and all dependencies
 		"""
-
+		local: bool = False
 		if ".pkg.tar." in name:
-			raise ValueError("local package unsupported")
-		if "/" in name and name in tree:
-			return
-		try:
-			pkgs = self.lookup_package(name)
-		except:
-			log.warning(f"package {name} not found")
-			return
+			pkg = self.handle.load_pkg(name)
+			if not pkg:
+				raise FileNotFoundError(f"package {name} not found")
+			local = True
+			pkgs = [pkg]
+		else:
+			if "/" in name and name in tree:
+				return
+			try:
+				pkgs = self.lookup_package(name)
+			except:
+				log.warning(f"package {name} not found")
+				return
 		for pkg in pkgs:
-			full = f"{pkg.db.name}/{pkg.name}"
+			full = name if local else f"{pkg.db.name}/{pkg.name}"
 			if full in tree: continue
 			tree.append(full)
 			for depend in pkg.depends:
