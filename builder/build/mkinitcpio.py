@@ -94,6 +94,9 @@ def recreate_initrds(ctx: ArchBuilderContext):
 	root = ctx.get_rootfs()
 	no_autodetect = ctx.get("mkinitcpio.no_autodetect", True)
 	folder = os.path.join(root, "etc/mkinitcpio.d")
+	if not os.path.exists(folder):
+		log.debug("skip recreate initrds")
+		return
 
 	# scan all initramfs preset and regenerate them
 	for preset in os.listdir(folder):
