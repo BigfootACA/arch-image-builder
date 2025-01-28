@@ -472,15 +472,20 @@ class Pacman:
 		Install packages via pacman
 		"""
 		if len(pkgs) == 0: return
+		local_pkgs = [item for item in pkgs if ".pkg.tar." in item]
+		dl_pkgs = [item for item in pkgs if ".pkg.tar." not in item]
 		ps = " ".join(pkgs)
 		log.info(f"installing packages {ps}")
-		self.download_all(pkgs)
-		args = ["--sync"]
-		if not force: args.append("--needed")
-		if asdeps: args.append("--asdeps")
-		if nodeps: args.extend(["--nodeps", "--nodeps"])
-		args.extend(pkgs)
-		self.pacman(args)
+		if dl_pkgs:
+			self.download_all(dl_pkgs)
+			args = ["--sync"]
+			if not force: args.append("--needed")
+			if asdeps: args.append("--asdeps")
+			if nodeps: args.extend(["--nodeps", "--nodeps"])
+			args.extend(dl_pkgs)
+			self.pacman(args)
+		if local_pkgs:
+			self.install_local(local_pkgs)
 
 	def download(self, pkgs: list[str], nogpg: bool=False):
 		"""
@@ -523,6 +528,7 @@ class Pacman:
 		"""
 		if len(files) == 0: return
 		log.info("installing local packages %s", " ".join(files))
+		self.download_all(files)
 		args = ["--needed", "--upgrade"]
 		args.extend(files)
 		self.pacman(args)
