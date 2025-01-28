@@ -486,13 +486,14 @@ class Pacman:
 		"""
 		Download packages via pacman
 		"""
-		if len(pkgs) == 0: return
+		dl_pkgs = [item for item in pkgs if ".pkg.tar." not in item]
+		if len(dl_pkgs) == 0: return
 		core_db = "var/lib/pacman/sync/core.db"
 		if not os.path.exists(os.path.join(self.root, core_db)):
 			self.refresh()
-		log.info("downloading packages %s", " ".join(pkgs))
+		log.info("downloading packages %s", " ".join(dl_pkgs))
 		args = ["--sync", "--downloadonly", "--nodeps", "--nodeps"]
-		args.extend(pkgs)
+		args.extend(dl_pkgs)
 		tries = 0
 		while True:
 			try:
