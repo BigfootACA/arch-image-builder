@@ -33,6 +33,8 @@ def parse_arguments(ctx: ArchBuilderContext):
 	if args.no_gpgcheck: ctx.gpgcheck = False
 	if args.repack: ctx.repack = True
 	if args.clean: ctx.clean = True
+	if ctx.clean and ctx.repack:
+		raise RuntimeError("clean and repack should not be used at the same time")
 
 	# collect configs path
 	configs = []
