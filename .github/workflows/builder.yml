@@ -55,14 +55,3 @@ jobs:
         with:
           name: ${{ matrix.preset }}
           path: artifacts/*.7z
-
-      - name: Cache pacman packages
-        uses: actions/cache@v4
-        if: always()
-        env:
-          cache-name: cache-pacman
-        with:
-          path: /var/cache/pacman/pkg/
-          key: ${{ matrix.arch }}-packages
-          restore-keys: |
-            ${{ matrix.arch }}-packages
