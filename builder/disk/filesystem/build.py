@@ -9,6 +9,12 @@ from builder.lib.utils import path_to_name
 log = getLogger(__name__)
 
 
+remove_rootflags = [
+	"defaults", "auto", "noauto", "user", "nouser", "ownner", "comment",
+	"nosuid", "nodev", "noexec", "noatime", "nodiratime", "relatime",
+	"bind", "rw", "ro", "remount", "bind", "fail", "nofail",
+]
+
 class FileSystemBuilder(ImageContentBuilder):
 	blkid: Blkid = Blkid()
 	fstype_map: dict = {
@@ -41,7 +47,11 @@ class FileSystemBuilder(ImageContentBuilder):
 		if mnt.fstype != "none":
 			ecmds.append(f"rootfstype={mnt.fstype}")
 		if len(mnt.option) > 0:
-			ecmds.append(f"rootflags={mnt.options}")
+			copied = mnt.clone()
+			for opt in copied.option:
+				if opt in remove_rootflags:
+					copied.option.remove(opt)
+			ecmds.append(f"rootflags={copied.options}")
 		scmds = " ".join(ecmds)
 		log.debug(f"add root cmdline {scmds}")
 		cmds.extend(ecmds)
