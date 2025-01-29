@@ -205,6 +205,8 @@ def proc_config(ctx: ArchBuilderContext, install: str):
 	"""
 	Generate a full grub config for current rootfs and write to install folder
 	"""
+	if "items" not in ctx.get("bootloader"):
+		return
 	content = mkconfig(ctx)
 	cfg = os.path.join(install, "grub.cfg")
 	with open(cfg, "w") as f:
@@ -435,6 +437,8 @@ def proc_grub(ctx: ArchBuilderContext):
 	Install GRUB bootloader
 	"""
 	root = ctx.get_rootfs()
+	if "grub" not in ctx.config:
+		return
 
 	# get grub install folder in rootfs (WORKSPACE/TARGET/rootfs/boot/grub)
 	install: str = ctx.get("grub.path", "/boot/grub")
