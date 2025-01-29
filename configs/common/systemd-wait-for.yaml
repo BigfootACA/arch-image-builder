@@ -1,6 +1,7 @@
 filesystem:
   files:
   - path: /etc/systemd/system/wait-addresses@.service
+    stage: pre-user
     content: |
       [Unit]
       Description=Wait for addresses %i
@@ -11,6 +12,7 @@ filesystem:
       [Install]
       WantedBy=network-online.target
   - path: /etc/systemd/system/wait-interface@.service
+    stage: pre-user
     content: |
       [Unit]
       Description=Wait for interface %i
@@ -21,6 +23,7 @@ filesystem:
       [Install]
       WantedBy=network-online.target
   - path: /etc/systemd/system/wait-reached@.service
+    stage: pre-user
     content: |
       [Unit]
       Description=Wait for reached %i
@@ -31,7 +34,8 @@ filesystem:
       SyslogIdentifier=wait-reached
       [Install]
       WantedBy=network-online.target
-  - path: /etc/systemd/scripts/wait-addresses.sh 
+  - path: /etc/systemd/scripts/wait-addresses.sh
+    stage: pre-user
     content: |
       #!/usr/bin/bash
       address="$${1}"
@@ -48,6 +52,7 @@ filesystem:
       done
       true
   - path: /etc/systemd/scripts/wait-interface.sh
+    stage: pre-user
     content: |
       #!/usr/bin/bash
       interface="$${1}"
@@ -64,6 +69,7 @@ filesystem:
       done
       true
   - path: /etc/systemd/scripts/wait-reached.sh
+    stage: pre-user
     content: |
       #!/usr/bin/bash
       address="$${1}"

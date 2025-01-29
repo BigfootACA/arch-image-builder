@@ -1,17 +1,20 @@
 filesystem:
   files:
   - path: /etc/systemd/scripts/generate-mac.sh
+    stage: pre-user
     content: |
       #!/bin/bash
       mac="$$((cat /etc/machine-id; echo "$$@"; ) | sha256sum -)"
       echo "42:$${mac:0:2}:$${mac:4:2}:$${mac:8:2}:$${mac:12:2}:$${mac:16:2}"
   - path: /etc/systemd/scripts/net-update-mac.sh
+    stage: pre-user
     content: |
       #!/bin/bash
       MAC="$$(bash /etc/systemd/scripts/generate-mac.sh "$$@")"
       ip link set dev "$$@" down &> /dev/null || true
       ip link set dev "$$@" address "$$MAC"
   - path: /etc/systemd/scripts/bt-update-mac.sh
+    stage: pre-user
     content: |
       #!/bin/bash
       MAC="$$(bash /etc/systemd/scripts/generate-mac.sh bluetooth)"
@@ -23,6 +26,7 @@ filesystem:
       done
       exit "$$?"
   - path: /etc/systemd/system/bt-update-mac.service
+    stage: pre-user
     content: |
       [Unit]
       Description=Update Bluetooth Persistent MAC Address
@@ -35,6 +39,7 @@ filesystem:
       [Install]
       WantedBy=bluetooth.target
   - path: /etc/systemd/system/net-update-mac@.service
+    stage: pre-user
     content: |
       [Unit]
       Description=Update Persistent MAC Address for %i

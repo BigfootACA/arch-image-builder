@@ -23,6 +23,7 @@ filesystem:
   files:
   # Windows NTP Server
   - path: /etc/systemd/timesyncd.conf.d/windows-ntp.conf
+    stage: pre-user
     content: |
       [Time]
       NTP=time.windows.com

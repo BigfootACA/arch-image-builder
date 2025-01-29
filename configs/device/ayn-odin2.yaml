@@ -48,33 +48,41 @@ systemd:
 filesystem:
   files:
   - path: /etc/systemd/system.conf.d/show-status.conf
+    stage: pre-user
     content: |
       [Manager]
       ShowStatus=yes
   - path: /etc/systemd/resolved.conf.d/no-mdns.conf
+    stage: pre-user
     content: |
       [Resolve]
       MulticastDNS=no
       LLMNR=no
   - path: /etc/dconf/profile/user
+    stage: pre-user
     content: |
       user-db:user
       system-db:local
   - path: /etc/dconf/profile/gdm
+    stage: pre-user
     content: |
       user-db:user
       system-db:local
   - path: /etc/dconf/db/local.d/00-hidpi
+    stage: pre-user
     content: |
       [org/gnome/mutter]
       experimental-features=['scale-monitor-framebuffer']
   - path: /etc/dconf/db/locks/hidpi
+    stage: pre-user
     content: |
       /org/gnome/mutter/experimental-features
   - path: /etc/chromium-flags.conf
+    stage: pre-user
     content: |
       --ozone-platform-hint=auto
   - path: /var/lib/gdm/.config/monitors.xml
+    stage: pre-user
     content: |
       <monitors version="2">
         <configuration>

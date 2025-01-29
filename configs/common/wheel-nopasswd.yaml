@@ -3,6 +3,7 @@ filesystem:
   files:
   # polkit
   - path: /etc/polkit-1/rules.d/99-wheel.rules
+    stage: pre-user
     mode: 0640
     content: |
       polkit.addRule(function(action,subject){
@@ -11,6 +12,7 @@ filesystem:
       });
   # sudo
   - path: /etc/sudoers.d/wheel
+    stage: pre-user
     mode: 0640
     content: |
       %wheel ALL=(ALL:ALL) NOPASSWD: ALL

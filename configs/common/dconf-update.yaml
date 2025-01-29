@@ -1,6 +1,7 @@
 filesystem:
   files:
   - path: /etc/systemd/system/dconf-update.service
+    stage: pre-user
     content: |
       [Unit]
       Description=Update Configuration database system

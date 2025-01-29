@@ -12,10 +12,12 @@ filesystem:
   files:
   # Wireless regulatory
   - path: /etc/conf.d/wireless-regdom
+    stage: pre-user
     content: |
       WIRELESS_REGDOM="US"
   # Windows NTP Server
   - path: /etc/systemd/timesyncd.conf.d/windows-ntp.conf
+    stage: pre-user
     content: |
       [Time]
       NTP=time.windows.com

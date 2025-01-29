@@ -10,11 +10,13 @@ filesystem:
 
   # Wireless regulatory
   - path: /etc/conf.d/wireless-regdom
+    stage: pre-user
     content: |
       WIRELESS_REGDOM="CN"
 
   # China accelerated DNS
   - path: /etc/systemd/resolved.conf.d/cn-dns.conf
+    stage: pre-user
     content: |
       [Resolve]
       DNS=114.114.114.114 119.29.29.29
@@ -22,6 +24,7 @@ filesystem:
 
   # China accelerated NTP Server
   - path: /etc/systemd/timesyncd.conf.d/cn-ntp.conf
+    stage: pre-user
     content: |
       [Time]
       NTP=cn.ntp.org.cn

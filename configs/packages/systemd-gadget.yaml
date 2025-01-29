@@ -17,6 +17,7 @@ systemd:
 filesystem:
   files:
   - path: /etc/systemd/network/sharenet.network.d/override.conf
+    stage: pre-user
     content: |
       [DHCPServer]
       EmitRouter=no

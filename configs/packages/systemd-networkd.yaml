@@ -2,6 +2,7 @@ filesystem:
   files:
     # Network configs from archiso
     - path: /etc/systemd/network/20-ethernet.network
+      stage: pre-user
       content: |
         [Match]
         Name=en*
@@ -14,6 +15,7 @@ filesystem:
         [IPv6AcceptRA]
         RouteMetric=100
     - path: /etc/systemd/network/20-wlan.network
+      stage: pre-user
       content: |
         [Match]
         Name=wl*
@@ -25,6 +27,7 @@ filesystem:
         [IPv6AcceptRA]
         RouteMetric=600
     - path: /etc/systemd/network/20-wwan.network
+      stage: pre-user
       content: |
         [Match]
         Name=ww*

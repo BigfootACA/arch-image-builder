@@ -5,10 +5,12 @@ pacman:
 filesystem:
   files:
   - path: /var/lib/AccountsService/users/alarm
+    stage: pre-user
     content: |
       [User]
       Session=phosh
   - path: /var/lib/AccountsService/users/arch
+    stage: pre-user
     content: |
       [User]
       Session=phosh

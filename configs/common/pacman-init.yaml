@@ -1,6 +1,7 @@
 filesystem:
   files:
   - path: /etc/systemd/system/pacman-init.service
+    stage: pre-user
     content: |
       [Unit]
       Description=Initializes Pacman keyring

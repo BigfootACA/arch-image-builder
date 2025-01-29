@@ -2,6 +2,7 @@
 filesystem:
   files:
   - path: /etc/sddm.conf.d/wayland.conf
+    stage: pre-user
     content: |
       [General]
       DisplayServer=wayland

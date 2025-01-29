@@ -13,9 +13,11 @@ filesystem:
   files:
   # Wireless regulatory
   - path: /etc/conf.d/wireless-regdom
+    stage: pre-user
     content: |
       WIRELESS_REGDOM="RU"
   - path: /etc/systemd/timesyncd.conf.d/ntp-pool-ntp.conf
+    stage: pre-user
     content: |
       [Time]
       NTP=0.ru.pool.ntp.org
