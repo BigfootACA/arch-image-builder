@@ -1,0 +1,7 @@
+# Resize rootfs (for msdos layout)
+pacman:
+  install:
+  - resize-rootfs
+systemd:
+  enable:
+  - resize-rootfs.service
