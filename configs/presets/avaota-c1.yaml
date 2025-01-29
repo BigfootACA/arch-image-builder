@@ -1,0 +1,7 @@
+package:
+  file: ArchLinuxARM-Avaota-C1-${version}.7z
+  configs:
+  - target/avaota-c1
+workflows:
+  auto: yes
+  arch: aarch64

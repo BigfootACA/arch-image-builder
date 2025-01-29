@@ -1,0 +1,77 @@
+name: Avaota C1
+target: ${device}
+arch: aarch64
+image:
+- type: disk
+  output: sdcard-emmc.img
+  layout: gpt
+  size: 2GiB
+  sector: 512
+  entries_count: 32
+  partitions:
+  - type: image
+    ptype: bios
+    pname: bootloader
+    start: 8KiB
+    size: 1MiB
+    aligned: no
+    file: /boot/u-boot-sunxi-with-spl.bin
+  - type: filesystem
+    ptype: efi
+    pname: esp
+    size: 512MiB
+    fsname: ESP
+    fstype: fat32
+    mount: /boot
+    fstab:
+      flags: rw,noatime,utf8,errors=remount-ro
+  - type: filesystem
+    ptype: linux-root-arm64
+    pname: linux
+    fsname: ArchLinuxARM
+    fstype: ext4
+    mount: /
+    fstab:
+      boot: yes
+      flags: rw,noatime,discard
+fstab:
+  dev: partlabel
+bootloader:
+  timeout: 3
+  method:
+  - systemd-boot
+  - extlinux
+  items:
+  - type: linux
+    default: yes
+    id: alarm-avaota-c1
+    name: Arch Linux ARM for Avaota C1
+    path: ${kernel.path}
+    kernel: /${kernel.kernel}
+    devicetree: /dtbs/allwinner/sun50i-h616-avaota-c1.dtb
+    cmdline: ${@kernel.cmdline}
+  - type: linux
+    id: alarm-avaota-c2
+    name: Arch Linux ARM for Avaota C2
+    path: ${kernel.path}
+    kernel: /${kernel.kernel}
+    devicetree: /dtbs/allwinner/sun50i-h618-avaota-c2.dtb
+    cmdline: ${@kernel.cmdline}
+  - type: linux
+    id: alarm-yuzuki-chameleon
+    name: Arch Linux ARM for Yuzuki Chameleon
+    path: ${kernel.path}
+    kernel: /${kernel.kernel}
+    devicetree: /dtbs/allwinner/sun50i-h616-yuzuki-chameleon.dtb
+    cmdline: ${@kernel.cmdline}
+scripts:
+- stage: pre-initramfs
+  chroot: yes
+  code: |
+    mods="$$(pacman -Qql linux-sun50i-h616 | grep -E '^/usr/lib/modules/[0-9]*\.[0-9]*\.[0-9]*[^/]*/$$')"
+    rm --one-file-system -rf /boot/Image /boot/dtbs
+    cp -av "$$mods/vmlinuz" /boot/Image
+    cp -av "$$mods/dtb" /boot/dtbs
++also:
+- device/avaota-c1
+- packages/resize-rootfs
