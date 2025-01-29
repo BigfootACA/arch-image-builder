@@ -1,7 +1,7 @@
 from math import ceil
 from io import RawIOBase
 from logging import getLogger
-from builder.lib.utils import size_to_bytes
+from builder.lib.utils import size_to_bytes, bytes_pad, round_up
 from builder.lib.serializable import SerializableDict
 from builder.lib.area import Area
 from builder.disk.layout.dio import DiskIO
@@ -94,6 +94,23 @@ class DiskLayout(DiskIO, DiskArea, SerializableDict):
 		size: int = -1,
 		area: Area = None,
 	) -> DiskPart: pass
+
+	def write_table(self, table, lba: int):
+		data = bytes(table)
+		size = round_up(len(data), self.sector)
+		data = bytes_pad(data, size)
+		sectors = size // self.sector
+		area = Area(start=lba, size=sectors)
+		if self.get_used_areas().is_area_in(area):
+			raise RuntimeError("attempt write table into partition")
+		log.debug(f"Wrote {len(data)} bytes to LBA {lba} with {sectors} sectors")
+		self.write_lbas(lba, data, sectors)
+
+	def write_header(self):
+		pass
+
+	def save(self):
+		self.write_header()
 
 	def __init__(
 		self,

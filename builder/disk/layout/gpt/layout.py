@@ -337,17 +337,6 @@ class DiskLayoutGPT(DiskLayout):
 			"entries": new_gpt_entries,
 		}
 
-	def write_table(self, table, lba: int):
-		data = bytes(table)
-		size = round_up(len(data), self.sector)
-		data = bytes_pad(data, size)
-		sectors = size // self.sector
-		area = Area(start=lba, size=sectors)
-		if self.get_used_areas().is_area_in(area):
-			raise RuntimeError("attempt write table into partition")
-		log.debug(f"Wrote {len(data)} bytes to LBA {lba} with {sectors} sectors")
-		self.write_lbas(lba, data, sectors)
-
 	def write_header(self):
 		if not self._fp.writable():
 			raise IOError("write is not allow")
@@ -371,9 +360,6 @@ class DiskLayoutGPT(DiskLayout):
 	def reload(self):
 		if not self.load_header():
 			raise IOError("Load GPT header failed")
-
-	def save(self):
-		self.write_header()
 
 	def create(self):
 		self.unload()
