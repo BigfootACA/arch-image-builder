@@ -5,13 +5,14 @@ filesystem:
     content: |
       [Unit]
       Description=Initializes Pacman keyring
-      Requires=etc-pacman.d-gnupg.mount
-      After=etc-pacman.d-gnupg.mount time-sync.target
-      BindsTo=etc-pacman.d-gnupg.mount
+      ConditionPathIsReadWrite=/etc/pacman.d
+      ConditionPathExists=!/etc/pacman.d/gnupg
+      After=time-sync.target
       Before=archlinux-keyring-wkd-sync.service
       [Service]
       Type=oneshot
       RemainAfterExit=yes
+      TimeoutStartSec=infinity
       ExecStart=/usr/bin/pacman-key --init
       ExecStart=/usr/bin/pacman-key --populate
       [Install]
