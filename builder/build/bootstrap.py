@@ -3,7 +3,7 @@ import sys
 import shutil
 from logging import getLogger
 from builder.disk import image
-from builder.build import mount, fstab, grub, user, filesystem
+from builder.build import mount, fstab, grub, user, filesystem, script
 from builder.build import locale, systemd, mkinitcpio, names
 from builder.build import pacman as pacman_build
 from builder.component import pacman as pacman_comp
@@ -76,17 +76,23 @@ def build_rootfs(ctx: ArchBuilderContext):
 
 	# clean workspace
 	if ctx.clean and os.path.exists(ctx.work):
+		script.run_scripts(ctx, "pre-clean")
 		remove_workspace(ctx)
+		script.run_scripts(ctx, "after-clean")
 
 	# create folders
 	os.makedirs(ctx.work, mode=0o755, exist_ok=True)
 	os.makedirs(ctx.get_rootfs(), mode=0o0755, exist_ok=True)
 	os.makedirs(ctx.get_output(), mode=0o0755, exist_ok=True)
 	os.makedirs(ctx.get_mount(), mode=0o0755, exist_ok=True)
+	script.run_scripts(ctx, "start")
 
 	# build rootfs contents
 	if not ctx.repack:
 		try:
+			# running scripts hooks (for environment init)
+			script.run_scripts(ctx, "pre-init")
+
 			# initialize basic folders
 			mount.init_rootfs(ctx)
 
@@ -95,6 +101,9 @@ def build_rootfs(ctx: ArchBuilderContext):
 
 			# running add files hooks (for build settings)
 			filesystem.add_files_all(ctx, "pre-build")
+
+			# running scripts hooks (for build settings)
+			script.run_scripts(ctx, "pre-build")
 
 			# initialize pacman context
 			pacman = pacman_comp.Pacman(ctx)
@@ -117,6 +126,9 @@ def build_rootfs(ctx: ArchBuilderContext):
 			# running add files hooks (for pacman settings)
 			filesystem.add_files_all(ctx, "pre-pacman")
 
+			# running scripts hooks (for pacman settings)
+			script.run_scripts(ctx, "pre-pacman")
+
 			# real install all packages
 			pacman_build.proc_pacman(ctx, pacman)
 
@@ -125,6 +137,9 @@ def build_rootfs(ctx: ArchBuilderContext):
 
 			# running add files hooks (for user settings)
 			filesystem.add_files_all(ctx, "pre-user")
+
+			# running scripts hooks (for user settings)
+			script.run_scripts(ctx, "pre-user")
 
 			# create custom users and groups
 			user.proc_usergroup(ctx)
@@ -144,6 +159,9 @@ def build_rootfs(ctx: ArchBuilderContext):
 			# running add files hooks (for initramfs settings)
 			filesystem.add_files_all(ctx, "pre-initramfs")
 
+			# running scripts hooks (for initramfs settings)
+			script.run_scripts(ctx, "pre-initramfs")
+
 			# recreate initramfs
 			mkinitcpio.proc_mkinitcpio(ctx)
 
@@ -162,6 +180,9 @@ def build_rootfs(ctx: ArchBuilderContext):
 	# running add files hooks (after build rootfs)
 	filesystem.add_files_all(ctx, "post-build")
 
+	# running scripts hooks (after build rootfs)
+	script.run_scripts(ctx, "post-build")
+
 	# reload user database before create images
 	ctx.reload_passwd()
 
@@ -178,6 +199,9 @@ def build_rootfs(ctx: ArchBuilderContext):
 
 		# running add files hooks (for bootloader settings)
 		filesystem.add_files_all(ctx, "post-fs")
+
+		# running scripts hooks (after bootloader rootfs)
+		script.run_scripts(ctx, "post-fs")
 
 		# copy rootfs into image
 		do_copy(ctx, ctx.get_rootfs(), ctx.get_mount())
