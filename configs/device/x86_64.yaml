@@ -8,3 +8,4 @@ pacman:
 - os/archlinux
 - packages/openssh
 - packages/systemd-networkd
+- common/pacman-init

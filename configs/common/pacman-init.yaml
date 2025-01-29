@@ -16,3 +16,10 @@ filesystem:
       ExecStart=/usr/bin/pacman-key --populate
       [Install]
       WantedBy=multi-user.target
+systemd:
+  enable:
+  - pacman-init.service
+scripts:
+- stage: pre-initramfs
+  chroot: yes
+  code: rm --one-file-system -rf /etc/pacman.d/gnupg

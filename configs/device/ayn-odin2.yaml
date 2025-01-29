@@ -201,4 +201,7 @@ mkinitcpio:
 # Root without password
 - common/wheel-nopasswd
 
+# Reinitialize pacman-key when boot
+- common/pacman-init
+
 - common/dconf-update
