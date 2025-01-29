@@ -38,6 +38,10 @@ filesystem:
         RouteMetric=700
         [IPv6AcceptRA]
         RouteMetric=700
+scripts:
+- stage: pre-user
+  chroot: yes
+  code: ln -vsf /run/systemd/resolve/stub-resolv.conf /etc/resolv.conf
 systemd:
   enable:
   - systemd-networkd.service
