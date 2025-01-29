@@ -69,8 +69,9 @@ class DiskLayoutGPT(DiskLayout):
 		area: Area = None,
 		name: str = None,
 		uuid: UUID = None,
+		aligned: bool = True,
 	) -> DiskPartGPT | None:
-		area = self.find_free_area(start, end, size, area)
+		area = self.find_free_area(start, end, size, area, aligned=aligned)
 		if area is None: return None
 		if ptype is None: ptype = "linux"
 		t = DiskTypesGPT.lookup_one_uuid(ptype)
@@ -93,12 +94,13 @@ class DiskLayoutGPT(DiskLayout):
 		return part
 
 	def add_partition_from(self, config: dict) -> DiskPartGPT:
-		area = self.parse_free_area(config)
+		aligned = config["aligned"] if "aligned" in config else True
+		area = self.parse_free_area(config, aligned=aligned)
 		if area is None: raise ValueError("no free area found")
 		ptype = config["ptype"] if "ptype" in config else None
 		pname = config["pname"] if "pname" in config else None
 		puuid = UUID(config["puuid"]) if "puuid" in config else None
-		part = self.add_partition(ptype, area=area, name=pname, uuid=puuid)
+		part = self.add_partition(ptype, area=area, name=pname, uuid=puuid, aligned=aligned)
 		if part:
 			if "hybrid" in config:
 				part.hybrid = True
@@ -108,15 +110,15 @@ class DiskLayoutGPT(DiskLayout):
 				part.attributes = config["attributes"]
 		return part
 
-	def get_usable_area(self) -> Area | None:
+	def get_usable_area(self, aligned=True) -> Area | None:
 		if self.main_entries_lba < 2: return None
 		if self.entries_count <= 0: return None
-		start = 2
-		end = round_down(self.backup_entries_lba, self.align_lba)
+		start, end = 2, self.backup_entries_lba
+		if aligned: end = round_down(self.backup_entries_lba, self.align_lba)
 		rs = min((part.start_lba for part in self.partitions), default=end)
 		first = self.main_entries_lba + self.entries_sectors + 1
 		if len(self.partitions) == 0 or first <= rs: start = first
-		start = round_up(start, self.align_lba)
+		if aligned: start = round_up(start, self.align_lba)
 		return Area(start=start, end=end - 1).fixup()
 
 	def get_used_areas(self, table=False) -> Areas:
@@ -131,14 +133,15 @@ class DiskLayoutGPT(DiskLayout):
 		areas.merge()
 		return areas
 
-	def get_free_areas(self) -> Areas:
+	def get_free_areas(self, aligned=True) -> Areas:
 		areas = Areas()
-		usable = self.get_usable_area()
+		usable = self.get_usable_area(aligned=aligned)
 		if usable is None: return areas
 		areas.add(area=usable)
 		for part in self.partitions:
 			areas.splice(area=part.to_area())
-		areas.align(self.align_lba)
+		if aligned:
+			areas.align(self.align_lba)
 		return areas
 
 	def try_load_pmbr(self) -> MasterBootRecord | None:

@@ -63,8 +63,8 @@ class DiskLayout(DiskIO, DiskArea, SerializableDict):
 		area.fixup()
 		return area
 
-	def parse_free_area(self, config: dict) -> Area:
-		return self.find_free_area(area=self._parse_area(config))
+	def parse_free_area(self, config: dict, aligned=True) -> Area:
+		return self.find_free_area(area=self._parse_area(config), aligned=aligned)
 
 	def resort_partitions(self):
 		self.partitions.sort(key=lambda p: p.start_lba)
@@ -74,10 +74,11 @@ class DiskLayout(DiskIO, DiskArea, SerializableDict):
 			idx += 1
 
 	def add_partition_from(self, config: dict) -> DiskPart:
-		area = self.parse_free_area(config)
+		aligned = config["aligned"] if "aligned" in config else True
+		area = self.parse_free_area(config, aligned=aligned)
 		if area is None: raise ValueError("no free area found")
 		ptype = config["ptype"] if "ptype" in config else "linux"
-		return self.add_partition(ptype, area=area)
+		return self.add_partition(ptype, area=area, aligned=aligned)
 
 	def del_partition(self, part: DiskPart):
 		if part not in self.partitions:
@@ -93,6 +94,7 @@ class DiskLayout(DiskIO, DiskArea, SerializableDict):
 		end: int = -1,
 		size: int = -1,
 		area: Area = None,
+		aligned: bool = True,
 	) -> DiskPart: pass
 
 	def write_table(self, table, lba: int):

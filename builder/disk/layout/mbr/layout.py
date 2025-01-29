@@ -36,8 +36,9 @@ class DiskLayoutMBR(DiskLayout):
 		size: int = -1,
 		area: Area = None,
 		logical: bool | None = None,
+		aligned: bool = True,
 	) -> DiskPartMBR | None:
-		area = self.find_free_area(start, end, size, area)
+		area = self.find_free_area(start, end, size, area, aligned=aligned)
 		if area is None: return None
 		if ptype is None: ptype = "linux"
 		extend: DiskPartMBR | None = None
@@ -75,20 +76,21 @@ class DiskLayoutMBR(DiskLayout):
 		return part
 
 	def add_partition_from(self, config: dict) -> DiskPartMBR:
-		area = self.parse_free_area(config)
+		aligned = config["aligned"] if "aligned" in config else True
+		area = self.parse_free_area(config, aligned=aligned)
 		if area is None: raise ValueError("no free area found")
 		ptype = config["ptype"] if "ptype" in config else None
 		logical = config["logical"] if "logical" in config else None
-		part = self.add_partition(ptype, area=area, logical=logical)
+		part = self.add_partition(ptype, area=area, logical=logical, aligned=aligned)
 		if part:
 			if "bootable" in config:
 				part.bootable = config["bootable"]
 		return part
 
-	def get_usable_area(self) -> Area | None:
+	def get_usable_area(self, aligned=True) -> Area | None:
 		if self.total_lba <= 2: return None
 		end = self.total_lba - 1
-		start = min(self.align_lba, end)
+		start = min(self.align_lba, end) if aligned else 1
 		return Area(start=start, end=end).fixup()
 
 	def get_used_areas(self, table=False) -> Areas:
@@ -105,9 +107,9 @@ class DiskLayoutMBR(DiskLayout):
 		areas.merge()
 		return areas
 
-	def get_free_areas(self) -> Areas:
+	def get_free_areas(self, aligned=True) -> Areas:
 		areas = Areas()
-		usable = self.get_usable_area()
+		usable = self.get_usable_area(aligned=aligned)
 		if usable is None: return areas
 		areas.add(area=usable)
 		for part in self.partitions:
@@ -121,7 +123,8 @@ class DiskLayoutMBR(DiskLayout):
 				end += 1
 				size += 1
 			areas.splice(start, end, size)
-		areas.align(self.align_lba)
+		if aligned:
+			areas.align(self.align_lba)
 		return areas
 
 	def create_mbr(self) -> MasterBootRecord:

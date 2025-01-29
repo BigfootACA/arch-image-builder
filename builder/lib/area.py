@@ -59,8 +59,6 @@ class Area(SerializableDict):
 		"""
 		if self.start >= 0 and self.end >= 0 and self.start > self.end + 1:
 			raise ValueError("start large than end")
-		if 0 <= self.end < self.size and self.size >= 0:
-			raise ValueError("size large than end")
 		if self.start >= 0 and self.end >= 0 and self.size >= 0:
 			if self.size != self.end - self.start + 1:
 				raise ValueError("bad size")
