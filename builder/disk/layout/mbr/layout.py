@@ -138,6 +138,17 @@ class DiskLayoutMBR(DiskLayout):
 			idx += 1
 		return new_mbr
 
+	def write_header(self):
+		if not self._fp.writable():
+			raise IOError("write is not allow")
+		mbr = self.create_mbr()
+		self.write_table(mbr, 0)
+		ebr = self.create_ebr_chains()
+		for sector in ebr:
+			self.write_table(ebr[sector], sector)
+		self._fp.flush()
+		log.info("MBR partition table saved")
+
 	def try_load_mbr(self) -> MasterBootRecord | None:
 		mbr_data = self.read_lba(0)
 		mbr = MasterBootRecord.from_buffer_copy(mbr_data)
@@ -213,8 +224,11 @@ class DiskLayoutMBR(DiskLayout):
 		if ret: log.debug(f"Found {cnt} partitions")
 		return ret
 
-	def create_ebr_chains(self) -> dict:
-		pass
+	def create_ebr_chains(self) -> dict[int: MasterBootRecord]:
+		for part in self.partitions:
+			if part.logical:
+				raise RuntimeError("EBR generate does not implemented now")
+		return {}
 
 	def load_header(self) -> bool:
 		self.unload()
@@ -233,9 +247,6 @@ class DiskLayoutMBR(DiskLayout):
 	def reload(self):
 		if self.load_header(): return
 		raise IOError("Load MBR header failed")
-
-	def save(self):
-		pass
 
 	def create(self):
 		self.unload()
