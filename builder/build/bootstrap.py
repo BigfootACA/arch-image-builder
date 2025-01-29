@@ -4,7 +4,7 @@ import shutil
 from logging import getLogger
 from builder.disk import image
 from builder.build import mount, fstab, grub, user, filesystem, script
-from builder.build import systemd_boot
+from builder.build import extlinux, systemd_boot
 from builder.build import locale, systemd, mkinitcpio, names
 from builder.build import pacman as pacman_build
 from builder.component import pacman as pacman_comp
@@ -200,6 +200,9 @@ def build_rootfs(ctx: ArchBuilderContext):
 
 		# install systemd-boot bootloader
 		systemd_boot.proc_systemd_boot(ctx)
+
+		# install extlinux bootloader
+		extlinux.proc_extlinux(ctx)
 
 		# running add files hooks (for bootloader settings)
 		filesystem.add_files_all(ctx, "post-fs")
