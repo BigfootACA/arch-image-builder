@@ -21,7 +21,10 @@ def cleanup(ctx: ArchBuilderContext):
 	def rm_rf(path: str):
 		real = os.path.join(root, path)
 		if not os.path.exists(real): return
-		shutil.rmtree(real, True)
+		if os.path.isdir(real):
+			shutil.rmtree(real, True)
+		else:
+			os.remove(real)
 
 	def del_child(path: str, prefix: str = None, suffix: str = None):
 		real = os.path.join(root, path)
