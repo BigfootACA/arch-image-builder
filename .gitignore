@@ -52,3 +52,4 @@ __pycache__
 /configs/custom/*
 /devices/custom/*
 !.gitkeep
+.vscode-ctags
