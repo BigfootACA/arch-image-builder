@@ -49,6 +49,21 @@ class FileSystemCreator:
 		return True
 
 
+class FileSystemImageCreator(FileSystemCreator):
+	def setup_image(self):
+		if not os.path.exists(self.device):
+			folder = os.path.dirname(self.device)
+			if not os.path.exists(folder):
+				log.debug(f"creating {folder}")
+				os.makedirs(folder, exist_ok=True)
+		elif os.path.isfile(self.device):
+			log.debug(f"removing {self.device}")
+			os.unlink(self.device)
+
+	def auto_create_image(self) -> bool:
+		return False
+
+
 class FileSystemCreators:
 	types: list[tuple[str, type[FileSystemCreator]]] = [
 	]
