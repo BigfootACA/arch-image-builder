@@ -24,7 +24,7 @@ def init_environment():
 def load_simple(path: str):
 	log.debug(f"try to open config {path}")
 	try:
-		with open(path, "r") as f:
+		with open(path, "r", encoding="utf-8") as f:
 			if path.endswith((".yml", ".yaml")):
 				log.debug(f"load {path} as yaml")
 				loaded = yaml.safe_load(f)
