@@ -80,6 +80,7 @@ class ImageBuilder:
 		self.size = 0
 		self.sector = 512
 		self.loop = False
+		self._builder = None
 		self.properties = {}
 		if "output" in config: self.output = config["output"]
 		if parent is None:
@@ -97,27 +98,52 @@ class ImageBuilder:
 		if "type" in config: self.type = config["type"]
 		if self.type is None: raise ArchBuilderConfigError("no type set in image")
 
-	def build(self):
+	@property
+	def builder(self):
+		if not self._builder:
+			from builder.disk.content import ImageContentBuilders
+			ImageContentBuilders.init()
+			t = ImageContentBuilders.find_builder(self.type)
+			if t is None: raise ArchBuilderConfigError(
+				f"unsupported builder type {self.type}"
+			)
+			self._builder = t(self)
+		self._builder.properties.update(self.properties)
+		return self._builder
+
+	def prepare_device(self, builder, post: bool):
 		if self.device is None:
-			if self.output:
-				self.create_image()
-			self.setup_loop()
-		from builder.disk.content import ImageContentBuilders
-		ImageContentBuilders.init()
-		t = ImageContentBuilders.find_builder(self.type)
-		if t is None: raise ArchBuilderConfigError(
-			f"unsupported builder type {self.type}"
-		)
-		builder = t(self)
-		builder.properties.update(self.properties)
-		builder.build()
+			if builder.auto_create_image():
+				if self.output and not post:
+					self.create_image()
+				self.setup_loop()
+			elif self.output:
+				self.device = self.output
+
+
+	def build(self):
+		self.prepare_device(self.builder, False)
+		self.builder.build()
+
+	def build_post(self):
+		self.prepare_device(self.builder, True)
+		self.builder.build_post()
+
+
+def get_builders(ctx: ArchBuilderContext) -> list[ImageBuilder]:
+	if not ctx.builders:
+		if "image" not in ctx.config: return
+		for image in ctx.config["image"]:
+			builder = ImageBuilder(ctx, image)
+			ctx.builders.append(builder)
+	return ctx.builders
 
 
 def proc_image(ctx: ArchBuilderContext):
-	if "image" not in ctx.config: return
-	builders: list[ImageBuilder] = []
-	for image in ctx.config["image"]:
-		builder = ImageBuilder(ctx, image)
-		builders.append(builder)
-	for builder in builders:
+	for builder in get_builders(ctx):
 		builder.build()
+
+
+def proc_image_post(ctx: ArchBuilderContext):
+	for builder in get_builders(ctx):
+		builder.build_post()

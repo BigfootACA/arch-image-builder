@@ -11,6 +11,12 @@ class ImageContentBuilder:
 
 	def build(self): pass
 
+	def auto_create_image(self) -> bool:
+		return True
+
+	def build_post(self):
+		pass
+
 
 class ImageContentBuilders:
 	types: list[tuple[str, type[ImageContentBuilder]]] = []

@@ -70,6 +70,11 @@ class ArchBuilderContext:
 	mounted: MountTab = MountTab()
 
 	"""
+	Image builders
+	"""
+	builders: list = []
+
+	"""
 	fstab for rootfs
 	"""
 	fstab: MountTab = MountTab()
