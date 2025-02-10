@@ -165,10 +165,13 @@ def proc_systemd_boot(ctx: ArchBuilderContext):
 		if mnt.fstype in ["vfat", "fat", "fat32", "fat16", "fat12", "msdos"]:
 			if mnt.target in efi_folders:
 				esp = mnt
-	if esp is None: raise RuntimeError("efi partition not found")
 
 	# esp install target folder (boot/efi)
-	esp_dest = esp.target
+	if esp is None:
+		log.warning("efi partition not found, use /boot/efi")
+		esp_dest = "boot/efi"
+	else:
+		esp_dest = esp.target
 	if esp_dest.startswith("/"):
 		esp_dest = esp_dest[1:]
 
