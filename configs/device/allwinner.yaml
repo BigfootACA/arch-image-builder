@@ -1,2 +1,21 @@
 platform: allwinner
 device_suffix:
+
+kernel:
+  cmdline:
+  - clk_ignore_unused
+  - pd_ignore_unused
+
+  # Always want devicetree
+  devicetree: dtbs/${platform}/${soc}-${device}.dtb
+
+filesystem:
+  files:
+  - path: /etc/systemd/system.conf.d/sunxi-wdt.conf
+    stage: pre-user
+    content: |
+      [Manager]
+      WatchdogDevice=/dev/watchdog0
+      RuntimeWatchdogSec=16s
+      RebootWatchdogSec=16s
+      KExecWatchdogSec=16s
