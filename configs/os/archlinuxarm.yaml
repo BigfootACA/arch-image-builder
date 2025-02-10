@@ -1,3 +1,6 @@
+distro:
+  name: Arch Linux ARM
+  id: archlinuxarm
 pacman:
   install:
   - core/base

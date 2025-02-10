@@ -1,3 +1,6 @@
+distro:
+  name: Arch Linux
+  id: archlinux
 pacman:
   install:
   - core/base
