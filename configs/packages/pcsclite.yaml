@@ -1,0 +1,17 @@
+pacman:
+  install:
+  - pcsclite
+
+filesystem:
+  files:
+  - path: /etc/skel/.gnupg/scdaemon.conf
+    stage: pre-user
+    content: |
+      disable-ccid
+      disable-pinpad
+      pcsc-driver /usr/lib/libpcsclite.so
+      pcsc-shared
+
+systemd:
+  enable:
+  - pcscd.socket
