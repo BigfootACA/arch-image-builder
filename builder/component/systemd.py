@@ -19,8 +19,8 @@ def systemctl(ctx: ArchBuilderContext, args: list[str]):
 		full_args.extend(args)
 		ret = filesystem.chroot_run(ctx, full_args)
 	if ret != 0: raise OSError(
-		"systemctl %s failed: %d",
-		" ".join(args), ret
+		"systemctl %s failed: %d" %
+		(" ".join(args), ret)
 	)
 
 
