@@ -1,0 +1,23 @@
+filesystem:
+  files:
+  - path: /etc/systemd/system/etc-pacman.d-gnupg.mount
+    stage: pre-user
+    content: |
+      [Unit]
+      Description=Temporary /etc/pacman.d/gnupg directory
+      BindsTo=pacman-init.service
+      Before=pacman-init.service
+      [Mount]
+      What=tmpfs
+      Where=/etc/pacman.d/gnupg
+      Type=tmpfs
+      Options=mode=0755,noswap
+
+scripts:
+- stage: pre-initramfs
+  chroot: yes
+  code: |
+    systemctl add-requires pacman-init.service etc-pacman.d-gnupg.mount
+
++also:
+- common/pacman-init

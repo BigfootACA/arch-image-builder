@@ -6,7 +6,7 @@ filesystem:
       [Unit]
       Description=Initializes Pacman keyring
       ConditionPathIsReadWrite=/etc/pacman.d
-      ConditionPathExists=!/etc/pacman.d/gnupg
+      ConditionDirectoryNotEmpty=!/etc/pacman.d/gnupg
       After=time-sync.target
       Before=archlinux-keyring-wkd-sync.service
       [Service]
