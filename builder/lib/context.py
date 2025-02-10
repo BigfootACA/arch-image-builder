@@ -80,6 +80,11 @@ class ArchBuilderContext:
 	fstab: MountTab = MountTab()
 
 	"""
+	mount tab for copying
+	"""
+	mtab: MountTab = MountTab()
+
+	"""
 	Enable GPG check for pacman packages and databases
 	"""
 	gpgcheck: bool = True

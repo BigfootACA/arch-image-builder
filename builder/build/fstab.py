@@ -9,6 +9,8 @@ def write_fstab(ctx: ArchBuilderContext):
 	"""
 	Generate fstab and write to rootfs
 	"""
+	if not ctx.fstab:
+		return
 	log.debug(
 		"generate fstab:\n\t%s",
 		ctx.fstab.to_mount_file("\n\t").strip()
@@ -30,11 +32,10 @@ def mount_all(ctx: ArchBuilderContext):
 	if not os.path.exists(path):
 		os.mkdir(path, mode=0o0755)
 
-	# the first item must be ROOT (sorted by ctx.fstab.resort())
-	if ctx.fstab[0].target != "/":
-		raise RuntimeError("no root to mount")
+	if not ctx.mtab:
+		return
 
-	for mnt in ctx.fstab:
+	for mnt in ctx.mtab:
 		# do not change original item
 		m = mnt.clone()
 
@@ -81,5 +82,6 @@ def mount_all(ctx: ArchBuilderContext):
 
 def proc_fstab(ctx: ArchBuilderContext):
 	ctx.fstab.resort()
+	ctx.mtab.resort()
 	write_fstab(ctx)
 	mount_all(ctx)

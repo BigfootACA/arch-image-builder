@@ -103,6 +103,7 @@ class FileSystemBuilder(ImageContentBuilder):
 	def proc_fstab(self, cfg: dict):
 		mnt = MountPoint()
 		ccfg = self.builder.ctx.config
+		use_fstab = True
 		fstab = cfg["fstab"] if "fstab" in cfg else {}
 		rfstab = ccfg["fstab"] if "fstab" in ccfg else {}
 		mnt.target = cfg["mount"]
@@ -123,19 +124,26 @@ class FileSystemBuilder(ImageContentBuilder):
 			if type(flags) is str: mnt.options = flags
 			elif type(flags) is list: mnt.option = flags
 			else: raise ArchBuilderConfigError("bad flags")
-		if mnt.source is None or mnt.target is None:
-			raise ArchBuilderConfigError("incomplete fstab")
+		if mnt.source is None:
+			if not fstab:
+				log.info(f"skip fstab item {mnt}")
+				mnt.source = self.builder.device
+				use_fstab = False
+			else:
+				raise ArchBuilderConfigError("incomplete fstab")
 		if len(self.builder.ctx.fstab.find_target(mnt.target)) > 0:
 			raise ArchBuilderConfigError(f"duplicate fstab target {mnt.target}")
 		if mnt.fstype in self.fstype_map:
 			mnt.fstype = self.fstype_map[mnt.fstype]
-		if "grow" in cfg and cfg["grow"]:
+		if use_fstab and cfg.get("grow", False):
 			self.proc_grow(cfg, mnt)
 		mnt.fixup()
-		log.debug(f"add fstab entry {mnt}")
-		self.builder.ctx.fstab.append(mnt)
+		if use_fstab:
+			log.debug(f"add fstab entry {mnt}")
+			self.builder.ctx.fstab.append(mnt)
+		self.builder.ctx.mtab.append(mnt)
 		self.builder.ctx.fsmap[mnt.source] = self.builder.device
-		if "boot" in fstab and fstab["boot"]:
+		if use_fstab and "boot" in fstab and fstab["boot"]:
 			self.proc_cmdline_root(cfg, mnt.clone())
 
 	@property
