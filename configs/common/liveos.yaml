@@ -1,0 +1,37 @@
+filesystem:
+  files:
+  - path: /etc/systemd/journald.conf.d/volatile-storage.conf
+    stage: pre-user
+    content: |
+      [Journal]
+      Storage=volatile
+
+  - path: /etc/systemd/logind.conf.d/do-not-suspend.conf
+    stage: pre-user
+    content: |
+      [Login]
+      HandleSuspendKey=ignore
+      HandleHibernateKey=ignore
+      HandleLidSwitch=ignore
+
+  - path: /etc/systemd/network.conf.d/ipv6-privacy-extensions.conf
+    stage: pre-user
+    content: |
+      [Network]
+      IPv6PrivacyExtensions=yes
+
+  - path: /etc/systemd/resolved.conf.d/mdns.conf
+    stage: pre-user
+    content: |
+      [Resolve]
+      MulticastDNS=yes
+
+scripts:
+- stage: pre-user
+  chroot: yes
+  code: |
+    mkdir -p /etc/systemd/system-generators/
+    ln -vsf /dev/null /etc/systemd/system-generators/systemd-gpt-auto-generator
+
++also:
+- common/pacman-key-tmpfs
