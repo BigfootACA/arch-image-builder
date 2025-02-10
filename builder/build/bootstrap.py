@@ -69,6 +69,14 @@ def remove_workspace(ctx: ArchBuilderContext):
 	shutil.rmtree(ctx.work)
 
 
+def run_hooks(ctx: ArchBuilderContext, stage: str=None):
+	# run add files hooks
+	filesystem.add_files_all(ctx, stage)
+
+	# run scripts hooks
+	script.run_scripts(ctx, stage)
+
+
 def build_rootfs(ctx: ArchBuilderContext):
 	"""
 	Build whole rootfs and generate image
@@ -77,22 +85,22 @@ def build_rootfs(ctx: ArchBuilderContext):
 
 	# clean workspace
 	if ctx.clean and os.path.exists(ctx.work):
-		script.run_scripts(ctx, "pre-clean")
+		run_hooks(ctx, "pre-clean")
 		remove_workspace(ctx)
-		script.run_scripts(ctx, "after-clean")
+		run_hooks(ctx, "after-clean")
 
 	# create folders
 	os.makedirs(ctx.work, mode=0o755, exist_ok=True)
 	os.makedirs(ctx.get_rootfs(), mode=0o0755, exist_ok=True)
 	os.makedirs(ctx.get_output(), mode=0o0755, exist_ok=True)
 	os.makedirs(ctx.get_mount(), mode=0o0755, exist_ok=True)
-	script.run_scripts(ctx, "start")
+	run_hooks(ctx, "start")
 
 	# build rootfs contents
 	if not ctx.repack:
 		try:
-			# running scripts hooks (for environment init)
-			script.run_scripts(ctx, "pre-init")
+			# run hooks for environment init
+			run_hooks(ctx, "pre-init")
 
 			# initialize basic folders
 			mount.init_rootfs(ctx)
@@ -100,11 +108,8 @@ def build_rootfs(ctx: ArchBuilderContext):
 			# initialize mount points for chroot
 			mount.init_mount(ctx)
 
-			# running add files hooks (for build settings)
-			filesystem.add_files_all(ctx, "pre-build")
-
-			# running scripts hooks (for build settings)
-			script.run_scripts(ctx, "pre-build")
+			# run hooks for build settings
+			run_hooks(ctx, "pre-build")
 
 			# initialize pacman context
 			pacman = pacman_comp.Pacman(ctx)
@@ -124,11 +129,8 @@ def build_rootfs(ctx: ArchBuilderContext):
 			# trust pgp key in config
 			pacman_build.trust_all(ctx, pacman)
 
-			# running add files hooks (for pacman settings)
-			filesystem.add_files_all(ctx, "pre-pacman")
-
-			# running scripts hooks (for pacman settings)
-			script.run_scripts(ctx, "pre-pacman")
+			# run hooks for pacman settings
+			run_hooks(ctx, "pre-pacman")
 
 			# real install all packages
 			pacman_build.proc_pacman(ctx, pacman)
@@ -136,11 +138,8 @@ def build_rootfs(ctx: ArchBuilderContext):
 			# reload user databases after install packages
 			ctx.reload_passwd()
 
-			# running add files hooks (for user settings)
-			filesystem.add_files_all(ctx, "pre-user")
-
-			# running scripts hooks (for user settings)
-			script.run_scripts(ctx, "pre-user")
+			# run hooks for user settings
+			run_hooks(ctx, "pre-user")
 
 			# create custom users and groups
 			user.proc_usergroup(ctx)
@@ -157,11 +156,8 @@ def build_rootfs(ctx: ArchBuilderContext):
 			# setup system names (environments / hosts / hostname / machine-info)
 			names.proc_names(ctx)
 
-			# running add files hooks (for initramfs settings)
-			filesystem.add_files_all(ctx, "pre-initramfs")
-
-			# running scripts hooks (for initramfs settings)
-			script.run_scripts(ctx, "pre-initramfs")
+			# run hooks for initramfs settings
+			run_hooks(ctx, "pre-initramfs")
 
 			# recreate initramfs
 			mkinitcpio.proc_mkinitcpio(ctx)
@@ -178,22 +174,16 @@ def build_rootfs(ctx: ArchBuilderContext):
 		# cleanup unneeded files
 		cleanup(ctx)
 
-	# running add files hooks (after build rootfs)
-	filesystem.add_files_all(ctx, "post-build")
-
-	# running scripts hooks (after build rootfs)
-	script.run_scripts(ctx, "post-build")
+	# run hooks after build rootfs
+	run_hooks(ctx, "post-build")
 
 	# reload user database before create images
 	ctx.reload_passwd()
 
 	# create images and initialize bootloader
 	try:
-		# running add files hooks (for image settings)
-		filesystem.add_files_all(ctx, "pre-image")
-
-		# running scripts hooks (for image settings)
-		script.run_scripts(ctx, "pre-image")
+		# run hooks for image settings
+		run_hooks(ctx, "pre-image")
 
 		# create disk and filesystem image
 		image.proc_image(ctx)
@@ -201,11 +191,8 @@ def build_rootfs(ctx: ArchBuilderContext):
 		# generate fstab
 		fstab.proc_fstab(ctx)
 
-		# running add files hooks (for bootloader settings)
-		filesystem.add_files_all(ctx, "pre-boot")
-
-		# running scripts hooks (for bootloader settings)
-		script.run_scripts(ctx, "pre-boot")
+		# run hooks for bootloader settings
+		run_hooks(ctx, "pre-boot")
 
 		# install grub bootloader
 		grub.proc_grub(ctx)
@@ -216,20 +203,14 @@ def build_rootfs(ctx: ArchBuilderContext):
 		# install extlinux bootloader
 		extlinux.proc_extlinux(ctx)
 
-		# running add files hooks (for bootloader settings)
-		filesystem.add_files_all(ctx, "post-fs")
-
-		# running scripts hooks (for bootloader settings)
-		script.run_scripts(ctx, "post-fs")
+		# run hooks for bootloader settings
+		run_hooks(ctx, "post-fs")
 
 		# copy rootfs into image
 		do_copy(ctx, ctx.get_rootfs(), ctx.get_mount())
 
-		# running add files hooks (for image settings)
-		filesystem.add_files_all(ctx, "post-image")
-
-		# running scripts hooks (after image rootfs)
-		script.run_scripts(ctx, "post-image")
+		# run hooks after image rootfs
+		run_hooks(ctx, "post-image")
 	finally:
 		ctx.cleanup()
 
