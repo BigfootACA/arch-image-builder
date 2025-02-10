@@ -279,7 +279,6 @@ def proc_mkimage_efi(ctx: ArchBuilderContext, target: str):
 			# to avoid / but installed in /boot
 			if (not grub) or mnt.level >= grub.level:
 				grub = mnt
-	if esp is None: raise RuntimeError("efi partition not found")
 	if grub is None: raise RuntimeError("grub install folder not found")
 
 	# grub install target folder (/boot/grub)
@@ -305,7 +304,11 @@ def proc_mkimage_efi(ctx: ArchBuilderContext, target: str):
 	)
 
 	# esp install target folder (boot/efi)
-	esp_dest = esp.target
+	if esp is None:
+		log.warning("efi partition not found, use /boot/efi")
+		esp_dest = "boot/efi"
+	else:
+		esp_dest = esp.target
 	if esp_dest.startswith("/"):
 		esp_dest = esp_dest[1:]
 
