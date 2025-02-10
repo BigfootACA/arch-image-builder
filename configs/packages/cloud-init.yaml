@@ -1,0 +1,11 @@
+pacman:
+  install:
+  - cloud-init
+
+systemd:
+  enable:
+    - cloud-config.service
+    - cloud-final.service
+    - cloud-init-local.service
+    - cloud-init-main.service
+    - cloud-init-network.service
