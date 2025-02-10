@@ -1,3 +1,5 @@
+import os
+import shutil
 from logging import getLogger
 from builder.build.filesystem import chroot_run
 from builder.lib.config import ArchBuilderConfigError
@@ -44,6 +46,16 @@ def proc_user(ctx: ArchBuilderContext, cfg: dict):
 	# reload user database
 	ctx.reload_passwd()
 	log.info(f"{action} user {name}")
+
+	# process skel only if modified user
+	root = ctx.get_rootfs()
+	home = ctx.passwd.lookup_name(name).home
+	if home.startswith("/"): home = home[1:]
+	real_skel = os.path.join(root, "etc/skel")
+	real_home = os.path.join(root, home)
+	if action == "modified" and os.path.isdir(real_skel) and os.path.isdir(real_home):
+		log.info(f"copying skel to user {name} home...")
+		shutil.copytree(real_skel, real_home, dirs_exist_ok=True)
 
 
 def proc_group(ctx: ArchBuilderContext, cfg: dict):
