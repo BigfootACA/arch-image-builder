@@ -13,8 +13,29 @@ def package_7zip(ctx: ArchBuilderContext, out: str):
 	return ctx.run_external(args, cwd=ctx.get_output())
 
 
+def package_iso(ctx: ArchBuilderContext, out: str):
+	args = [
+		"xorriso", "-no_rc", "-as", "mkisofs",
+		"-iso-level", "3", "-full-iso9660-filenames",
+		"-joliet", "-joliet-long", "-rational-rock",
+	]
+	args.extend(["-publisher", os.getenv("ARCH_PUBLISHER", ctx.get("package.publisher", "Unknown"))])
+	args.extend(["-volid", ctx.get("package.label", ctx.get("name", "ARCHLINUX"))])
+	args.extend(["-appid", ctx.get("package.app", ctx.get("name", "ArchLinux"))])
+	args.extend(["-preparer", "arch-image-builder"])
+	if "args" in ctx.config["package"]:
+		args.extend(ctx.config["package"]["args"])
+	args.extend(["-output", out])
+	args.append(ctx.get_output())
+	if os.path.exists(out) and os.path.isfile(out):
+		log.debug(f"removing {out}")
+		os.unlink(out)
+	return ctx.run_external(args, cwd=ctx.get_output())
+
+
 package_formats = [
 	(".7z",    package_7zip),
+	(".iso",   package_iso),
 ]
 
 def done_package(ctx: ArchBuilderContext):
