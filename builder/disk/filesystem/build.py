@@ -23,6 +23,10 @@ class FileSystemBuilder(ImageContentBuilder):
 		"fat32": "vfat",
 	}
 
+	def __init__(self, builder: ImageContentBuilder):
+		self._creator = None
+		super().__init__(builder)
+
 	def proc_cmdline_root(self, cfg: dict, mnt: MountPoint):
 		ccfg = self.builder.ctx.config_orig
 		mnt.remove_option("ro")
@@ -134,19 +138,34 @@ class FileSystemBuilder(ImageContentBuilder):
 		if "boot" in fstab and fstab["boot"]:
 			self.proc_cmdline_root(cfg, mnt.clone())
 
-	def format(self, fstype: str):
-		from builder.disk.filesystem.creator import FileSystemCreators
-		FileSystemCreators.init()
-		t = FileSystemCreators.find_builder(fstype)
-		if t is None: raise ArchBuilderConfigError(f"unsupported fs type {fstype}")
-		creator = t(fstype, self, self.builder.config)
-		creator.create()
+	@property
+	def fstype(self) -> str:
+		if "fstype" not in self.builder.config:
+			raise ArchBuilderConfigError("fstype not set")
+		return self.builder.config["fstype"]
+
+	@property
+	def creator(self):
+		if not self._creator:
+			from builder.disk.filesystem.creator import FileSystemCreators
+			FileSystemCreators.init()
+			self._creator = FileSystemCreators.find_builder(self.fstype)
+			if self._creator is None: raise ArchBuilderConfigError(f"unsupported fs type {self.fstype}")
+		return self._creator(self.fstype, self, self.builder.config)
+
+	def format(self):
+		self.creator.create()
+
+	def copy(self):
+		self.creator.copy()
+
+	def auto_create_image(self) -> bool:
+		return self.creator.auto_create_image()
 
 	def build(self):
-		cfg = self.builder.config
-		if "fstype" not in cfg:
-			raise ArchBuilderConfigError("fstype not set")
-		fstype = cfg["fstype"]
-		self.format(fstype)
-		if "mount" in cfg:
-			self.proc_fstab(cfg)
+		self.format()
+		if "mount" in self.builder.config:
+			self.proc_fstab(self.builder.config)
+
+	def build_post(self):
+		self.copy()

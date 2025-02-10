@@ -23,6 +23,11 @@ class FileSystemCreator:
 
 	def create(self): pass
 
+	def copy(self): pass
+
+	def auto_create_image(self) -> bool:
+		return True
+
 
 class FileSystemCreators:
 	types: list[tuple[str, type[FileSystemCreator]]] = [
