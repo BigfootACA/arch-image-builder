@@ -1,0 +1,42 @@
+filesystem:
+  files:
+  - path: /etc/systemd/scripts/choose-mirror.sh
+    stage: pre-user
+    content: |
+      #!/bin/bash
+      get_cmdline() {
+        local param
+        for param in $$(</proc/cmdline); do
+          case "$${param}" in
+            "$${1}="*)
+              echo "$${param##*=}"
+              return 0
+            ;;
+          esac
+        done
+      }
+      mirror="$$(get_cmdline mirror)"
+      [[ "$$mirror" == 'auto' ]] && mirror="$$(get_cmdline archiso_http_srv)"
+      [[ -n "$$mirror" ]] || exit 0
+      mv /etc/pacman.d/mirrorlist /etc/pacman.d/mirrorlist.orig
+      cat >/etc/pacman.d/mirrorlist <<EOF
+      Server = $${mirror%%/}/\$$repo/os/\$$arch
+      EOF
+
+  - path: /etc/systemd/system/choose-mirror.service
+    stage: pre-user
+    content: |
+      [Unit]
+      Description=Choose mirror from the kernel command line
+      ConditionKernelCommandLine=mirror
+      After=network-online.target
+      [Service]
+      Type=oneshot
+      ExecStart=bash /etc/systemd/scripts/choose-mirror.sh
+      SyslogIdentifier=choose-mirror
+      [Install]
+      WantedBy=default.target
+
+systemd:
+  enable:
+  - choose-mirror.service
