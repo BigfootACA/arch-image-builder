@@ -1,0 +1,33 @@
+arch: aarch64
+
+# Available Platform:
+#   Allwinner
+#   Amlogic
+#   Broadcom (BCM2835)
+#   Hisilicon
+#   Qualcomm
+#   Virtio (QEMU)
+#   Rockchip
+
+pacman:
+  install:
+  # For regulatory.db
+  - wireless-regdb
+
+  # Universal Kernel
+  - linux-mainline-aarch64
+
+  # Need load kernel modules
+  - mkinitcpio
+
+kernel:
+  kernel: vmlinuz-linux-mainline-aarch64
+  initramfs: initramfs-linux-mainline-aarch64.img
+
+scripts:
+- stage: pre-initramfs
+  chroot: yes
+  code: |
+    mods="$$(pacman -Qql linux-mainline-aarch64 | grep -E '^/usr/lib/modules/[0-9]*\.[0-9]*\.[0-9]*[^/]*/$$')"
+    rm --one-file-system -rf /boot/dtbs
+    cp -a "$$mods/dtb" /boot/dtbs
