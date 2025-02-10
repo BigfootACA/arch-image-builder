@@ -45,7 +45,7 @@ class FileSystemBuilder(ImageContentBuilder):
 		if not mnt.source.startswith("/") and "=" not in mnt.source:
 			log.warning(f"bad root source ({mnt.source})")
 		ecmds = [
-			"ro", "rootwait",
+			"ro", "rootwait=10",
 			f"root={mnt.source}",
 		]
 		if mnt.fstype != "none":
