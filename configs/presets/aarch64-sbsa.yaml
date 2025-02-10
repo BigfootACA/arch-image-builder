@@ -1,0 +1,7 @@
+package:
+  file: ArchLinuxARM-ARM64-SBSA-${version}.7z
+  configs:
+  - target/aarch64-sbsa
+workflows:
+  auto: yes
+  arch: aarch64
