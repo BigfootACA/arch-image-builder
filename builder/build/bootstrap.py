@@ -1,5 +1,4 @@
 import os
-import sys
 import shutil
 from logging import getLogger
 from builder.disk import image
@@ -39,23 +38,6 @@ def cleanup(ctx: ArchBuilderContext):
 	del_child("var/lib/pacman/sync")
 	del_child("etc", suffix="-")
 	rm_rf("etc/.pwd.lock")
-
-
-def do_copy(ctx: ArchBuilderContext, src: str, dst: str):
-	"""
-	Copying rootfs via rsync
-	"""
-	rsrc = os.path.realpath(src)
-	rdst = os.path.realpath(dst)
-	log.info("start copying rootfs...")
-	args = ["rsync", "--archive", "--recursive", "--delete"]
-	if os.isatty(sys.stdout.fileno()):
-		args.append("--info=progress2")
-	args.append(rsrc + os.sep)
-	args.append(rdst)
-	ret = ctx.run_external(args)
-	os.sync()
-	if ret != 0: raise OSError("rsync failed")
 
 
 def remove_workspace(ctx: ArchBuilderContext):
@@ -207,7 +189,7 @@ def build_rootfs(ctx: ArchBuilderContext):
 		run_hooks(ctx, "post-fs")
 
 		# copy rootfs into image
-		do_copy(ctx, ctx.get_rootfs(), ctx.get_mount())
+		ctx.do_copy("rootfs", ctx.get_rootfs(), ctx.get_mount(), delete=True)
 
 		# run hooks after image rootfs
 		run_hooks(ctx, "post-image")

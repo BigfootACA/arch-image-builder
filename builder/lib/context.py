@@ -1,4 +1,5 @@
 import os
+import sys
 from copy import deepcopy
 from datetime import datetime
 from subprocess import Popen, PIPE
@@ -235,3 +236,21 @@ class ArchBuilderContext:
 		if not os.path.ismount(real): return
 		for mnt in self.mounted.find_target(real):
 			self.mounted.remove(mnt)
+
+	def do_copy(self, label: str, src: str, dst: str, delete: bool=False, no_cross: bool=False):
+		"""
+		Copying rootfs via rsync
+		"""
+		rsrc = os.path.realpath(src)
+		rdst = os.path.realpath(dst)
+		log.info(f"start copying {label}...")
+		args = ["rsync", "--archive", "--recursive"]
+		if delete: args.append("--delete")
+		if no_cross: args.append("--one-file-system")
+		if os.isatty(sys.stdout.fileno()):
+			args.append("--info=progress2")
+		args.append(rsrc + os.sep)
+		args.append(rdst)
+		ret = self.run_external(args)
+		os.sync()
+		if ret != 0: raise OSError("rsync failed")
