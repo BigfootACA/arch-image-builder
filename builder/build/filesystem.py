@@ -29,8 +29,7 @@ def chroot_run(
 	return ctx.run_external(args, cwd, env, stdin, cgroup)
 
 
-def proc_mkdir(ctx: ArchBuilderContext, file: dict, path: str):
-	root = ctx.get_rootfs()
+def proc_mkdir(ctx: ArchBuilderContext, dir: str, file: dict, path: str):
 	dir_uid, dir_gid, dir_mode = 0, 0, 0o0755
 	if "mkdir" in file:
 		if type(file["mkdir"]) is bool:
@@ -45,8 +44,8 @@ def proc_mkdir(ctx: ArchBuilderContext, file: dict, path: str):
 		if folder.endswith("/"): folder = folder[0:-1]
 		if len(folder) == 0: return
 
-		# resolve to rootfs
-		real = os.path.join(root, folder)
+		# resolve to folder
+		real = os.path.join(dir, folder)
 		if os.path.exists(real): return
 
 		# create parent folder first
@@ -92,13 +91,29 @@ def check_allowed(path: str, action: str):
 		raise ArchBuilderConfigError(f"{action} {path} is not allowed")
 
 
+def find_target(ctx: ArchBuilderContext, file: dict, action: str):
+	rootfs = ctx.get_rootfs()
+	output = ctx.get_output()
+	mount = ctx.get_mount()
+	work = ctx.work	
+	target = file["target"] if "target" in file else "rootfs"
+	match target:
+		case "rootfs": dir = rootfs
+		case "output": dir = output
+		case "mount": dir = mount
+		case "work": dir = work
+		case _: raise ArchBuilderConfigError(f"unknown file target {target}")
+	if dir.startswith(rootfs) or dir.startswith(mount):
+		check_allowed(file["path"], action)
+	return dir
+
+
 def add_file(ctx: ArchBuilderContext, file: dict):
 	# at least path content
 	if "path" not in file:
 		raise ArchBuilderConfigError("no path set in file")
 	if "content" not in file and "source" not in file and "url" not in file:
 		raise ArchBuilderConfigError(f"no content, source or url set in file")
-	root = ctx.get_rootfs()
 	path: str = file["path"]
 	if path.startswith("/"): path = path[1:]
 	uid, gid = user.parse_user_from(ctx, file)
@@ -115,13 +130,13 @@ def add_file(ctx: ArchBuilderContext, file: dict):
 	# files mode
 	mode = int(file["mode"]) if "mode" in file else 0o0644
 
-	check_allowed(file["path"], "add files into")
+	dir = find_target(ctx, file, "add files into")
 
 	# create parent folders
-	proc_mkdir(ctx, file, path)
+	proc_mkdir(ctx, dir, file, path)
 
-	# resolve to rootfs
-	real = os.path.join(root, path)
+	# resolve to folder
+	real = os.path.join(dir, path)
 
 	if "content" in file:
 		if not follow and os.path.exists(real): os.remove(real)
