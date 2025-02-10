@@ -7,6 +7,7 @@ from builder.lib.context import ArchBuilderContext
 
 class DiskLayoutBuilder(ImageContentBuilder):
 	ctx: ArchBuilderContext
+	builders: list[ImageBuilder]
 
 	def build(self):
 		self.ctx = self.builder.ctx
@@ -24,7 +25,7 @@ class DiskLayoutBuilder(ImageContentBuilder):
 		)
 		disk.create()
 		disk.set_from(cfg)
-		builders: list[ImageBuilder] = []
+		self.builders = []
 		for part in cfg["partitions"]:
 			p = disk.add_partition_from(part)
 			if "type" in part:
@@ -32,7 +33,11 @@ class DiskLayoutBuilder(ImageContentBuilder):
 				if p.partlabel: b.properties["PARTLABEL"] = p.partlabel
 				if p.partuuid: b.properties["PARTUUID"] = p.partuuid
 				b.sector, b.offset, b.size = disk.sector, p.start, p.size
-				builders.append(b)
+				self.builders.append(b)
 		disk.save()
-		for builder in builders:
+		for builder in self.builders:
 			builder.build()
+
+	def build_post(self):
+		for builder in self.builders:
+			builder.build_post()
