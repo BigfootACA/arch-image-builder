@@ -1,0 +1,29 @@
+filesystem:
+  files:
+  - path: /etc/systemd/scripts/mute-printk.sh
+    stage: pre-user
+    content: |
+      #!/usr/bin/env bash
+      ## *current*, *default*, *minimum*, *boot-time-default*
+      awk '{print $$2" "$$2" "$$3" "$$4}' \
+        < /proc/sys/kernel/printk \
+        > /proc/sys/kernel/printk
+      exit 0
+
+  - path: /etc/systemd/system/mute-printk.service
+    stage: pre-user
+    content: |
+      [Unit]
+      Description=Reset printk loglevel to default
+      DefaultDependencies=no
+      [Service]
+      Type=oneshot
+      RemainAfterExit=yes
+      ExecStart=bash /etc/systemd/scripts/mute-printk.sh
+      SyslogIdentifier=mute-printk
+      [Install]
+      WantedBy=sysinit.target
+
+systemd:
+  enable:
+  - mute-printk.service
