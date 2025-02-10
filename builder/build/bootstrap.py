@@ -189,11 +189,23 @@ def build_rootfs(ctx: ArchBuilderContext):
 
 	# create images and initialize bootloader
 	try:
+		# running add files hooks (for image settings)
+		filesystem.add_files_all(ctx, "pre-image")
+
+		# running scripts hooks (for image settings)
+		script.run_scripts(ctx, "pre-image")
+
 		# create disk and filesystem image
 		image.proc_image(ctx)
 
 		# generate fstab
 		fstab.proc_fstab(ctx)
+
+		# running add files hooks (for bootloader settings)
+		filesystem.add_files_all(ctx, "pre-boot")
+
+		# running scripts hooks (for bootloader settings)
+		script.run_scripts(ctx, "pre-boot")
 
 		# install grub bootloader
 		grub.proc_grub(ctx)
@@ -207,11 +219,17 @@ def build_rootfs(ctx: ArchBuilderContext):
 		# running add files hooks (for bootloader settings)
 		filesystem.add_files_all(ctx, "post-fs")
 
-		# running scripts hooks (after bootloader rootfs)
+		# running scripts hooks (for bootloader settings)
 		script.run_scripts(ctx, "post-fs")
 
 		# copy rootfs into image
 		do_copy(ctx, ctx.get_rootfs(), ctx.get_mount())
+
+		# running add files hooks (for image settings)
+		filesystem.add_files_all(ctx, "post-image")
+
+		# running scripts hooks (after image rootfs)
+		script.run_scripts(ctx, "post-image")
 	finally:
 		ctx.cleanup()
 
