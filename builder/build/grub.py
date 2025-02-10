@@ -251,7 +251,7 @@ def proc_mkimage_efi(ctx: ArchBuilderContext, target: str):
 	base = os.path.join(root, "usr/lib/grub", target)
 
 	# install path in rootfs (/boot/grub)
-	install = ctx.get("grub.path", "/boot/grub")
+	install: str = ctx.get("grub.path", "/boot/grub")
 
 	# why this function called proc_mkimage_efi?
 	if not target.endswith("-efi"):
@@ -270,7 +270,7 @@ def proc_mkimage_efi(ctx: ArchBuilderContext, target: str):
 				esp = mnt
 
 		# add an end slash to avoid same prefix (likes /boot /bootfs)
-		tdir = mnt.target
+		tdir: str = mnt.target
 		if not tdir.endswith("/"): tdir += "/"
 
 		# grub install folder
@@ -279,29 +279,38 @@ def proc_mkimage_efi(ctx: ArchBuilderContext, target: str):
 			# to avoid / but installed in /boot
 			if (not grub) or mnt.level >= grub.level:
 				grub = mnt
-	if grub is None: raise RuntimeError("grub install folder not found")
 
 	# grub install target folder (/boot/grub)
-	if not install.startswith("/"):
-		install = "/" + install
+	if grub is None:
+		log.warning("grub partition not found, use /boot/grub")
+		install = "/boot/grub"
+		grub_tgt: str = "/"
+	else:
+		grub_tgt = grub.target
+		if not install.startswith("/"):
+			install = "/" + install
 
 	# must in grub install folder
-	if not install.startswith(grub.target):
+	if not install.startswith(grub_tgt):
 		raise RuntimeError("grub install prefix not found")
 
 	# get grub install path in target partition
 	#  Mount  GRUB Install  Prefix
 	#  /boot  /boot/grub    /grub
 	#  /      /boot/grub    /boot/grub
-	prefix = install[len(grub.target):]
+	prefix = install[len(grub_tgt):]
 	if not prefix.startswith("/"): prefix = "/" + prefix
 
 	# get UUID of grub installed filesystem UUID
-	device = (ctx.fsmap[grub.source] if grub.source in ctx.fsmap else grub.source)
-	uuid = blkid.get_tag_value(None, "UUID", device)
-	if not uuid: raise RuntimeError(
-		"failed to detect uuid for grub install path"
-	)
+	if grub:
+		device = (ctx.fsmap[grub.source] if grub.source in ctx.fsmap else grub.source)
+		uuid = blkid.get_tag_value(None, "UUID", device)
+		if not uuid: raise RuntimeError(
+			"failed to detect uuid for grub install path"
+		)
+	else:
+		device = None
+		uuid = None
 
 	# esp install target folder (boot/efi)
 	if esp is None:
@@ -326,7 +335,10 @@ def proc_mkimage_efi(ctx: ArchBuilderContext, target: str):
 	# put builtin config into grub install folder
 	builtin = os.path.join(grub_folder, "grub.builtin.cfg")
 	with open(builtin, "w") as f:
-		f.write(f"search --no-floppy --fs-uuid --set=root {uuid}\n")
+		if uuid:
+			f.write(f"search --no-floppy --fs-uuid --set=root {uuid}\n")
+		else:
+			f.write(f"search --no-floppy --file --set=root {prefix}/grub.cfg\n")
 		f.write(f"set prefix=\"($root){prefix}\"\n")
 		f.write("normal\n")
 		f.write("echo \"Failed to switch into normal mode\"\n")
