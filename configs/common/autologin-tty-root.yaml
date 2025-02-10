@@ -1,0 +1,22 @@
+filesystem:
+  files:
+  - path: /etc/systemd/system/getty@.service.d/autologin.conf
+    stage: pre-user
+    content: |
+      [Service]
+      ExecStart=
+      ExecStart=-/sbin/agetty -o '-p -f -- \\u' --noclear --autologin root - $$TERM
+
+  - path: /etc/systemd/system/serial-getty@.service.d/autologin.conf
+    stage: pre-user
+    content: |
+      [Service]
+      ExecStart=
+      ExecStart=-/sbin/agetty -o '-p -f -- \\u' --keep-baud 115200,57600,38400,9600 --autologin root - $$TERM
+
+  - path: /etc/systemd/system/console-getty.service.d/autologin.conf
+    stage: pre-user
+    content: |
+      [Service]
+      ExecStart=
+      ExecStart=-/sbin/agetty -o '-p -f -- \\u' --keep-baud 115200,57600,38400,9600 --autologin root - $$TERM
