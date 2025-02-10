@@ -188,8 +188,8 @@ def build_rootfs(ctx: ArchBuilderContext):
 		# run hooks for bootloader settings
 		run_hooks(ctx, "post-fs")
 
-		# copy rootfs into image
-		ctx.do_copy("rootfs", ctx.get_rootfs(), ctx.get_mount(), delete=True)
+		# post process images
+		image.proc_image_post(ctx)
 
 		# run hooks after image rootfs
 		run_hooks(ctx, "post-image")
