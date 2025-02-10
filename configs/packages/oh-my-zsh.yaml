@@ -1,0 +1,21 @@
+pacman:
+  install:
+    - oh-my-zsh-git
+
+filesystem:
+  files:
+    - path: /etc/skel/.zshrc
+      stage: pre-user
+      content: |
+        ZSH=/usr/share/oh-my-zsh/
+        ZSH_THEME="ys"
+        plugins=(git)
+        ZSH_CACHE_DIR=$$HOME/.cache/oh-my-zsh
+        if [[ ! -d $$ZSH_CACHE_DIR ]]; then
+          mkdir $$ZSH_CACHE_DIR
+        fi
+        source $$ZSH/oh-my-zsh.sh
+        setopt nonomatch
+
++also:
+- shell/zsh
