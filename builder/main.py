@@ -51,12 +51,15 @@ def parse_arguments(ctx: ArchBuilderContext):
 		for mirror in args.mirror:
 			configs.extend([f"mirrors/{name}" for name in mirror.split(",")])
 
-	# load and populate configs
+	# load configs
 	config.load_configs(ctx, configs)
-	config.populate_config(ctx)
+	config.fill_base_options(ctx)
 
 	# build folder: {TOP}/build/{TARGET}
 	ctx.work = os.path.realpath(os.path.join(args.workspace, ctx.target))
+
+	# populate configs
+	config.populate_config(ctx)
 
 	if args.artifacts:
 		ctx.artifacts = os.path.realpath(args.artifacts)

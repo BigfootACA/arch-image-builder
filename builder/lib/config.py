@@ -52,10 +52,7 @@ def load_config_file(ctx: ArchBuilderContext, path: str):
 		_proc_include(loaded["+then"])
 		loaded.pop("+then")
 
-
-def populate_config(ctx: ArchBuilderContext):
-	ctx.finish_config()
-	ctx.resolve_subscript()
+def fill_base_options(ctx: ArchBuilderContext):
 	if "target" not in ctx.config:
 		raise ArchBuilderConfigError("no target set")
 	if "arch" not in ctx.config:
@@ -64,6 +61,14 @@ def populate_config(ctx: ArchBuilderContext):
 	ctx.tgt_arch = ctx.config["arch"]
 	if ctx.tgt_arch == "any" or ctx.cur_arch == "any":
 		raise ArchBuilderConfigError("bad cpu arch value")
+
+def populate_config(ctx: ArchBuilderContext):
+	ctx.config["work"] = ctx.work
+	ctx.config["rootfs"] = ctx.get_rootfs()
+	ctx.config["output"] = ctx.get_output()
+	ctx.config["mount"] = ctx.get_mount()
+	ctx.finish_config()
+	ctx.resolve_subscript()
 	if not cpu_arch_compatible(ctx.tgt_arch, ctx.cur_arch):
 		log.warning(
 			f"current cpu arch {ctx.cur_arch} is not compatible to {ctx.tgt_arch}, "
