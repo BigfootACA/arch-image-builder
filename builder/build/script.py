@@ -7,6 +7,7 @@ log = getLogger(__name__)
 
 
 def run_script(ctx: ArchBuilderContext, script: dict):
+	ret = 0
 	env: dict = None
 	shell: str = script.get("shell", "bash")
 	cwd: str = script.get("cwd", None)
@@ -24,9 +25,10 @@ def run_script(ctx: ArchBuilderContext, script: dict):
 		args.append("-e")
 	log.debug(f"running custom script\n{script["code"]}")
 	if script.get("chroot", False):
-		chroot_run(ctx, args, cwd, env, script["code"])
+		ret = chroot_run(ctx, args, cwd, env, script["code"])
 	else:
-		ctx.run_external(args, cwd, env, script["code"])
+		ret = ctx.run_external(args, cwd, env, script["code"])
+	if ret !=0: raise ArchBuilderConfigError(f"script run failed: {ret}")
 
 
 def run_scripts(ctx: ArchBuilderContext, stage: str = None):
