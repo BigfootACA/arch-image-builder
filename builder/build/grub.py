@@ -207,6 +207,8 @@ def proc_config(ctx: ArchBuilderContext, install: str):
 	"""
 	if "items" not in ctx.get("bootloader"):
 		return
+	if not ctx.get("grub.config", True):
+		return
 	content = mkconfig(ctx)
 	cfg = os.path.join(install, "grub.cfg")
 	with open(cfg, "w") as f:
@@ -333,7 +335,10 @@ def proc_mkimage_efi(ctx: ArchBuilderContext, target: str):
 	cmds.append("--compression=xz")
 
 	# put builtin config into grub install folder
-	builtin = os.path.join(grub_folder, "grub.builtin.cfg")
+	if ctx.get("grub.config", True):
+		builtin = os.path.join(grub_folder, "grub.builtin.cfg")
+	else:
+		builtin = os.path.join(root, "tmp/.grub.builtin.cfg")
 	with open(builtin, "w") as f:
 		if uuid:
 			f.write(f"search --no-floppy --fs-uuid --set=root {uuid}\n")
@@ -360,6 +365,10 @@ def proc_mkimage_efi(ctx: ArchBuilderContext, target: str):
 	ret = ctx.run_external(cmds)
 	if ret != 0: raise OSError("grub-mkimage failed")
 	log.info(f"generated grub {target} efi image {out}")
+
+	# remove temporary config
+	if not ctx.get("grub.config", True):
+		os.unlink(builtin)
 
 
 def proc_bootsec(ctx: ArchBuilderContext, target: str):
@@ -439,7 +448,8 @@ def proc_install(ctx: ArchBuilderContext):
 	targets: list[str] = ctx.get("grub.targets", [])
 	for target in targets:
 		if target == "i386-pc":
-			proc_bootsec(ctx, target)
+			if ctx.get("grub.bootsec", True):
+				proc_bootsec(ctx, target)
 		elif target.endswith("-efi"):
 			proc_mkimage_efi(ctx, target)
 		else: raise ArchBuilderConfigError(
