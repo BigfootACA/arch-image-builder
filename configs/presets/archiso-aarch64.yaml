@@ -1,0 +1,16 @@
+package:
+  file: ArchISO-aarch64-${version}.iso
+  label: ARCHISO
+  args: [
+    "--efi-boot", "boot/efi.img",
+    "-efi-boot-part",
+    "--efi-boot-image",
+    "--protective-msdos-label",
+    "--sort-weight", "0", "/",
+    "--sort-weight", "1", "/boot",
+  ]
+  configs:
+  - target/archiso-aarch64
+workflows:
+  auto: yes
+  arch: aarch64

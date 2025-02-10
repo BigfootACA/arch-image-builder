@@ -1,0 +1,439 @@
+pacman:
+  gen_mirrorlist: no
+  install:
+  - mkinitcpio-archiso
+  - arch-install-scripts
+  - archinstall
+  - pv
+  - qemu-guest-agent
+  - alsa-utils
+  - arch-install-scripts
+  - archinstall
+  - bcachefs-tools
+  - bind
+  - bolt
+  - brltty
+  - btrfs-progs
+  - clonezilla
+  - cryptsetup
+  - darkhttpd
+  - ddrescue
+  - dhclient
+  - dhcpcd
+  - diffutils
+  - dmidecode
+  - dmraid
+  - dnsmasq
+  - dosfstools
+  - e2fsprogs
+  - efibootmgr
+  - espeakup
+  - ethtool
+  - exfatprogs
+  - f2fs-tools
+  - fatresize
+  - fsarchiver
+  - gpart
+  - gpm
+  - gptfdisk
+  - grml-zsh-config
+  - grub
+  - hdparm
+  - iw
+  - iwd
+  - jfsutils
+  - kitty-terminfo
+  - ldns
+  - less
+  - lftp
+  - libfido2
+  - libusb-compat
+  - linux-atm
+  - linux-firmware
+  - linux-firmware-marvell
+  - livecd-sounds
+  - lsscsi
+  - lvm2
+  - lynx
+  - man-db
+  - man-pages
+  - mc
+  - mdadm
+  - mkinitcpio
+  - mkinitcpio-archiso
+  - mkinitcpio-nfs-utils
+  - modemmanager
+  - mtools
+  - nano
+  - nbd
+  - ndisc6
+  - nfs-utils
+  - nilfs-utils
+  - nmap
+  - ntfs-3g
+  - nvme-cli
+  - open-iscsi
+  - openconnect
+  - openpgp-card-tools
+  - openssh
+  - openvpn
+  - partclone
+  - parted
+  - partimage
+  - ppp
+  - pptpclient
+  - pv
+  - rp-pppoe
+  - rsync
+  - rxvt-unicode-terminfo
+  - screen
+  - sdparm
+  - sequoia-sq
+  - sg3_utils
+  - smartmontools
+  - sof-firmware
+  - squashfs-tools
+  - sudo
+  - syslinux
+  - systemd-resolvconf
+  - tcpdump
+  - terminus-font
+  - testdisk
+  - tmux
+  - tpm2-tools
+  - tpm2-tss
+  - udftools
+  - usb_modeswitch
+  - usbmuxd
+  - usbutils
+  - vim
+  - vpnc
+  - wireless-regdb
+  - wireless_tools
+  - wpa_supplicant
+  - wvdial
+  - xfsprogs
+  - xl2tpd
+  - edk2-shell
+
+sysconf:
+  hosts:
+  - 127.0.0.1 localhost
+  - 127.0.1.1 archiso
+  hostname: archiso
+
+filesystem:
+  files:
+
+  - path: /etc/ssh/sshd_config.d/10-archiso.conf
+    stage: pre-user
+    content: |
+      PasswordAuthentication yes
+      PermitRootLogin yes
+
+  - path: /etc/motd
+    stage: pre-user
+    content: |
+      To install Arch Linux follow the installation guide:
+      https://wiki.archlinux.org/title/Installation_guide
+
+      For Wi-Fi, authenticate to the wireless network using the iwctl utility.
+      For mobile broadband (WWAN) modems, connect with the mmcli utility.
+      Ethernet, WLAN and WWAN interfaces using DHCP should work automatically.
+
+  # ArchISO hooks
+  - path: /etc/mkinitcpio.conf.d/archiso.conf
+    stage: pre-initramfs
+    content: |
+      HOOKS=(
+        base udev microcode modconf kms memdisk archiso
+        archiso_loop_mnt archiso_pxe_common archiso_pxe_nbd
+        archiso_pxe_http archiso_pxe_nfs block filesystems keyboard
+      )
+      MODULES=(af_packet)
+      COMPRESSION="xz"
+      COMPRESSION_OPTIONS=(-9e)
+
+  # ArchISO stamp for find drive
+  - path: /arch/.stamp-${version}
+    stage: post-fs
+    target: output
+    content: ${version}
+
+  # ArchISO version
+  - path: /arch/version
+    stage: post-fs
+    target: output
+    content: ${version}
+
+  # GRUB2 image builtin config
+  - path: /boot/grub/grub.builtin.cfg
+    stage: pre-initramfs
+    target: output
+    content: |
+      search --no-floppy --set=root --file "/arch/.stamp-${version}"
+      set prefix="($$root)/boot/grub"
+
+  # GRUB2 ArchISO menu config
+  - path: /boot/grub/grub.cfg
+    stage: post-fs
+    target: output
+    content: |
+      insmod progress
+      insmod all_video
+      insmod extcmd
+      insmod minicmd
+      search --no-floppy --set=root --file "/arch/.stamp-${version}"
+      terminal_input console
+      terminal_output console
+      if serial --unit=0 --speed=115200; then
+        terminal_input --append serial
+        terminal_output --append serial
+      fi
+      if loadfont unicode; then
+        set gfxmode=auto
+        set gfxpayload=keep
+        terminal_output --append gfxterm
+        terminal_output --remove console
+      fi
+      archiso_name_cpu="$${grub_cpu}"
+      archiso_name_plat="$${grub_platform}"
+      if [ "$${grub_cpu}" == 'x86_64' ]; then
+        archiso_name_cpu="x64"
+      elif [ "$${grub_cpu}" == 'i386' ]; then
+        archiso_name_cpu="IA32"
+      elif [ "$${grub_cpu}" == 'ia64' ]; then
+        archiso_name_cpu="IA64"
+      elif [ "$${grub_cpu}" == 'arm64' ]; then
+        archiso_name_cpu="ARM 64"
+      elif [ "$${grub_cpu}" == 'arm32' ]; then
+        archiso_name_cpu="ARM 32"
+      elif [ "$${grub_cpu}" == 'riscv32' ]; then
+        archiso_name_cpu="RISC-V 32"
+      elif [ "$${grub_cpu}" == 'riscv64' ]; then
+        archiso_name_cpu="RISC-V 64"
+      elif [ "$${grub_cpu}" == 'loongarch64' ]; then
+        archiso_name_cpu="LoongArch 64"
+      fi
+      if [ "$${grub_platform}" == 'efi' ]; then
+        archiso_name_plat='UEFI'
+      elif [ "$${grub_platform}" == 'pc' ]; then
+        archiso_name_plat='BIOS'
+      elif [ "$${grub_platform}" == 'uboot' ]; then
+        archiso_name_plat='U-Boot'
+      fi
+      archiso_name_platform="$${archiso_name_cpu} $${archiso_name_plat}"
+      default=${distro.id}
+      timeout=15
+      timeout_style=menu
+      menuentry "${distro.name} install medium (OS: ${arch}, Firmware: $${archiso_name_platform})" \
+        --class arch --class gnu-linux --class gnu --class os --id '${distro.id}' {
+        set gfxpayload=keep
+        echo "Loading kernel..."
+        linux /arch/boot/${arch}/${kernel.kernel} ${@kernel.cmdline}
+        echo "Loading initramfs..."
+        initrd /arch/boot/${arch}/${kernel.initramfs}
+        echo "Booting..."
+      }
+      menuentry "${distro.name} install medium run in RAM (OS: ${arch}, Firmware: $${archiso_name_platform})" \
+        --class arch --class gnu-linux --class gnu --class os --id '${distro.id}-ram' {
+        set gfxpayload=keep
+        echo "Loading kernel..."
+        linux /arch/boot/${arch}/${kernel.kernel} ${@kernel.cmdline} copytoram=1
+        echo "Loading initramfs..."
+        initrd /arch/boot/${arch}/${kernel.initramfs}
+        echo "Booting..."
+      }
+      if [ "$${grub_platform}" == 'efi' -a "$${grub_cpu}" == 'x86_64' -a -f '/boot/memtest86+/memtest.efi' ]; then
+        menuentry 'Run Memtest86+ (RAM test)' --class memtest86 --class memtest --class gnu --class tool {
+          set gfxpayload=800x600,1024x768
+          linux /boot/memtest86+/memtest.efi
+        }
+      fi
+      if [ "$${grub_platform}" == 'pc' -a -f '/boot/memtest86+/memtest.bin' ]; then
+        menuentry 'Run Memtest86+ (RAM test)' --class memtest86 --class memtest --class gnu --class tool {
+          set gfxpayload=800x600,1024x768
+          linux /boot/memtest86+/memtest.bin
+        }
+      fi
+      if [ "$${grub_platform}" == 'efi' ]; then
+        if [ "$${grub_cpu}" == 'x86_64' -a -f '/boot/shellx64.efi' ]; then
+          menuentry 'UEFI Shell' --class efi {
+            chainloader /boot/shellx64.efi
+          }
+        elif [ "$${grub_cpu}" == "i386" -a -f '/boot/shellia32.efi' ]; then
+          menuentry 'UEFI Shell' --class efi {
+            chainloader /boot/shellia32.efi
+          }
+        elif [ "$${grub_cpu}" == "ia64" -a -f '/boot/shellia64.efi' ]; then
+          menuentry 'UEFI Shell' --class efi {
+            chainloader /boot/shellia64.efi
+          }
+        elif [ "$${grub_cpu}" == "arm64" -a -f '/boot/shellaa64.efi' ]; then
+          menuentry 'UEFI Shell' --class efi {
+            chainloader /boot/shellaa64.efi
+          }
+        elif [ "$${grub_cpu}" == "arm32" -a -f '/boot/shellarm.efi' ]; then
+          menuentry 'UEFI Shell' --class efi {
+            chainloader /boot/shellarm.efi
+          }
+        fi
+        menuentry 'UEFI Firmware Settings' --id 'uefi-firmware' {
+          fwsetup
+        }
+      fi
+      menuentry 'System shutdown' --class shutdown --class poweroff {
+        echo 'System shutting down...'
+        halt
+      }
+      menuentry 'System restart' --class reboot --class restart {
+        echo 'System rebooting...'
+        reboot
+      }
+
+# ArchISO required commandlines
+kernel:
+  cmdline:
+  - loglevel=7
+  - archisobasedir=arch
+  - archisosearchfilename=/arch/.stamp-${version}
+
+scripts:
+# Remove password and all users
+- stage: pre-initramfs
+  chroot: yes
+  code: |
+    passwd --delete --unlock root
+    for home in /home/*; do
+      if ! [ -d "$$home" ]; then
+        continue
+      fi
+      if ! [ -z "$$(ls "$$home")" ]; then
+        echo "DANGEROUS: home $$home is not empty" >&2
+        exit 1
+      fi
+    done
+    for home in /home/*; do
+      if ! [ -d "$$home" ]; then
+        continue
+      fi
+      user="$$(basename "$$home")"
+      userdel --remove "$$user"
+      groupdel "$$user" || true
+    done
+
+# Generate package list
+- stage: pre-initramfs
+  chroot: yes
+  code: pacman -Q > /boot/pkglist.${arch}.txt
+
+# Cleanup old stamps
+- stage: pre-boot
+  code: |
+    rm -f ${output}/arch/.stamp-*
+
+# RootFS checksum generate
+- stage: post-image
+  code: |
+    rm -f ${output}/arch/*/airootfs.{md5,sha1,sha256,sha512}
+    for image in ${output}/arch/*/airootfs.{sfs,erofs}; do
+      [ -f "$$image" ] || continue
+      dir="$$(dirname "$$image")"
+      file="$$(basename "$$image")"
+      pushd "$$dir"
+      md5sum    "$$file" | tee -a airootfs.md5
+      sha1sum   "$$file" | tee -a airootfs.sha1
+      sha256sum "$$file" | tee -a airootfs.sha256
+      sha512sum "$$file" | tee -a airootfs.sha512
+      popd
+    done
+    cp "${rootfs}/boot/pkglist.${arch}.txt" "${output}/arch/"
+
+# GRUB2 target install
+- stage: post-fs
+  code: |
+    boot="${rootfs}/boot"
+    dst="${output}/arch/boot/${arch}/"
+    mkdir -pv "$$dst"
+    cp "$$boot/${kernel.kernel}" "$$dst"
+    cp "$$boot/${kernel.initramfs}" "$$dst"
+    out="${output}/boot"
+    mkdir -pv "$$out"
+    for target in ${@grub.targets}; do
+      src="$$boot/grub/$$target"
+      dst="$$out/grub/$$target"
+      [ -d "$$src" ] || continue
+      if [ -d "$$dst" ]; then
+        rm -rf --one-file-system "$$dst"
+      fi
+      cp -a "$$src" "$$dst"
+    done
+    fonts="$$out/grub/fonts"
+    mkdir -pv "$$fonts"
+    cp "${rootfs}/usr/share/grub"/*.pf2 "$$fonts/"
+
+# EDK2 EFI Shell
+- stage: post-fs
+  code: |
+    cp "${rootfs}/usr/share/edk2-shell/x64/Shell_Full.efi" "${output}/boot/shellx64.efi"
+    cp "${rootfs}/usr/share/edk2-shell/ia32/Shell_Full.efi" "${output}/boot/shellia32.efi"
+    cp "${rootfs}/usr/share/edk2-shell/aarch64/Shell_Full.efi" "${output}/boot/shellaa64.efi"
+    cp "${rootfs}/usr/share/edk2-shell/arm/Shell_Full.efi" "${output}/boot/shellarm.efi"
+
+# GRUB2 UEFI boot image and boot sector
+- stage: pre-image
+  code: |
+    dir="${rootfs}/efi/efi/boot"
+    mkdir -p "$$dir"
+    mkdir -p "${output}/efi/"
+    mkdir -p "${output}/boot/"
+    mods=(
+      part_gpt part_msdos part_apple fshelp fat ntfs search
+      search_label search_fs_uuid search_fs_file extcmd iso9660
+    )
+    for target in ${@grub.targets}; do
+      format="$$target"
+      use_mods=$${mods[@]}
+      use_args=""
+      case "$$target" in
+        x86_64-efi) out="$$dir/bootx64.efi" ;;
+        i386-efi) out="$$dir/bootia32.efi" ;;
+        ia64-efi) out="$$dir/bootia64.efi" ;;
+        arm-efi) out="$$dir/bootarm.efi" ;;
+        arm64-efi) out="$$dir/bootaa64.efi" ;;
+        riscv32-efi) out="$$dir/bootriscv32.efi" ;;
+        riscv64-efi) out="$$dir/bootriscv64.efi" ;;
+        loongarch64-efi) out="$$dir/bootloongarch64.efi" ;;
+        i386-pc)
+          out="${output}/boot/eltorito.img";
+          format=i386-pc-eltorito;
+          use_mods+=" biosdisk"
+        ;;
+        *) echo "Unsupported target $$target" >&2; exit 1 ;;
+      esac
+      grub-mkimage \
+        --format="$$format" --output="$$out" \
+        --directory="${rootfs}/usr/lib/grub/$$target" \
+        --prefix=/boot/grub --compression=xz \
+        --config="${output}/boot/grub/grub.builtin.cfg" \
+        $$use_args $$use_mods
+    done
+    cp -a "$$dir" "${output}/efi/"
+
+systemd:
+  enable:
+  - iwd.service
+  - ModemManager.service
+  - systemd-timesyncd.service
+
++also:
+- packages/openssh
+- packages/systemd-networkd
+- packages/cloud-init
+- packages/pcsclite
+- shell/zsh
+- common/autologin-tty-root
+- common/automated-script
+- common/choose-mirror
+- common/mute-printk
+- common/liveos

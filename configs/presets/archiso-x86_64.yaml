@@ -1,0 +1,22 @@
+package:
+  file: ArchISO-x86_64-${version}.iso
+  label: ARCHISO
+  args: [
+    "-b", "boot/eltorito.img",
+    "-no-emul-boot",
+    "-boot-load-size", "4",
+    "-boot-info-table",
+    "--grub2-boot-info",
+    "--grub2-mbr", "boot/boot_hybrid.img",
+    "--efi-boot", "boot/efi.img",
+    "-efi-boot-part",
+    "--efi-boot-image",
+    "--protective-msdos-label",
+    "--sort-weight", "0", "/",
+    "--sort-weight", "1", "/boot",
+  ]
+  configs:
+  - target/archiso-x86_64
+workflows:
+  auto: yes
+  arch: x86_64

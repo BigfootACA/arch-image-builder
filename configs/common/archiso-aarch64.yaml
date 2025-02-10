@@ -1,0 +1,7 @@
+# Addition packages for aarch64
+pacman:
+  install:
+  - linux-firmware-qcom
+
++also:
+- common/archiso

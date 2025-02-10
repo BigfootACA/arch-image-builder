@@ -1,0 +1,68 @@
+name: ArchISO for x86_64 compatible PC
+target: archiso-x86_64
+arch: x86_64
+
+image:
+# RootFS image
+- type: filesystem
+  output: arch/${arch}/airootfs.sfs
+  fstype: squashfs
+  args: ["-comp", "xz", "-Xbcj", "x86", "-b", "1M", "-Xdict-size", "1M"]
+  path: /
+
+# UEFI boot
+- type: filesystem
+  output: boot/efi.img
+  fstype: fat12
+  size: 2MiB
+  mount: /efi
+
+kernel:
+  kernel: vmlinuz-linux
+  initramfs: initramfs-linux.img
+  cmdline:
+  - add_efi_memmap
+  - earlyprintk
+
+grub:
+  path: /boot/grub
+  bootsec: no
+  config: no
+  targets:
+  - x86_64-efi
+  - i386-efi
+  - i386-pc
+
+bootloader:
+  timeout: 3
+  method:
+  - grub
+
+filesystem:
+  files:
+  - path: /etc/mkinitcpio.d/linux.preset
+    stage: pre-initramfs
+    content: |
+      PRESETS=('archiso')
+      ALL_kver='/boot/${kernel.kernel}'
+      archiso_config='/etc/mkinitcpio.conf.d/archiso.conf'
+      archiso_image="/boot/${kernel.initramfs}"
+
+scripts:
+- stage: pre-initramfs
+  code: |
+    rm -f ${rootfs}/boot/initramfs-linux.img
+    rm -f ${rootfs}/boot/initramfs-linux-fallback.img
+- stage: pre-boot
+  code: |
+    mkdir -p "${output}/boot"
+    rm -rf --one-file-system "${output}/boot/memtest86+"
+    cp -a "${rootfs}/boot/memtest86+/" "${output}/boot/memtest86+"
+    cp "${rootfs}/usr/lib/grub/i386-pc/boot_hybrid.img" "${output}/boot/"
+    mkdir -p "${output}/arch/boot"
+    cp "${rootfs}/boot/amd-ucode.img" "${output}/arch/boot/"
+    cp "${rootfs}/boot/intel-ucode.img" "${output}/arch/boot/"
+
++also:
+- device/x86_64
+- common/archiso-x86_64

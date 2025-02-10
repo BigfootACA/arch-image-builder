@@ -1,0 +1,24 @@
+# Addition packages for x86_64
+pacman:
+  install:
+  - hyperv
+  - open-vm-tools
+  - virtualbox-guest-utils-nox
+  - broadcom-wl
+  - b43-fwcutter
+  - amd-ucode
+  - intel-ucode
+  - memtest86+
+  - memtest86+-efi
+  - syslinux
+
+systemd:
+  enable:
+  - hv_kvp_daemon.service
+  - hv_vss_daemon.service
+  - vboxservice.service
+  - vmtoolsd.service
+  - vmware-vmblock-fuse.service
+
++also:
+- common/archiso
