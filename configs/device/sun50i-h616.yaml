@@ -1,0 +1,44 @@
+arch: aarch64
+soc: sun50i-h616
+
+mkinitcpio:
+  # Modules for Allwinner H616
+  modules:
+  - axp20x
+  - axp20x-i2c
+  - axp20x-regulator
+  - btrfs
+  - ext4
+  - i2c-mv64xxx
+  - mmc-block
+  - pinctrl-axp209
+  - sun50i-h616-ccu
+  - sun50i-h6-r-ccu
+  - sunxi-mmc
+  - vfat
+  - sun8i-drm-hdmi
+  - dw-hdmi
+  - sunxi
+  - musb-hdrc
+  - sunxi-wdt
+  - sun8i-thermal
+  - phy-sun4i-usb
+  - sun4i-drm
+  - sun4i-tcon
+  - nvmem-sunxi-sid
+  - sun8i-tcon-top
+  - sun8i-de33-ccu
+  - sun8i-mixer
+  - sun8i-ce
+  - sun6i-dma
+  - clk-pwm
+  - ehci-platform
+  - ohci-platform
+  - pwrseq-simple
+
++also:
+# Generic allwinner related config
+- device/allwinner
+
+# Universal Mainline Kernel
+- packages/linux-mainline-aarch64
