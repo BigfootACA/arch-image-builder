@@ -1,5 +1,5 @@
 name: Avaota C1
-target: ${device}
+target: avaota-c1
 arch: aarch64
 image:
 - type: disk
@@ -48,6 +48,7 @@ bootloader:
     name: Arch Linux ARM for Avaota C1
     path: ${kernel.path}
     kernel: /${kernel.kernel}
+    initramfs: /${kernel.initramfs}
     devicetree: /dtbs/allwinner/sun50i-h616-avaota-c1.dtb
     cmdline: ${@kernel.cmdline}
   - type: linux
@@ -55,6 +56,7 @@ bootloader:
     name: Arch Linux ARM for Avaota C2
     path: ${kernel.path}
     kernel: /${kernel.kernel}
+    initramfs: /${kernel.initramfs}
     devicetree: /dtbs/allwinner/sun50i-h618-avaota-c2.dtb
     cmdline: ${@kernel.cmdline}
   - type: linux
@@ -62,16 +64,14 @@ bootloader:
     name: Arch Linux ARM for Yuzuki Chameleon
     path: ${kernel.path}
     kernel: /${kernel.kernel}
+    initramfs: /${kernel.initramfs}
     devicetree: /dtbs/allwinner/sun50i-h616-yuzuki-chameleon.dtb
     cmdline: ${@kernel.cmdline}
-scripts:
-- stage: pre-initramfs
-  chroot: yes
-  code: |
-    mods="$$(pacman -Qql linux-sun50i-h616 | grep -E '^/usr/lib/modules/[0-9]*\.[0-9]*\.[0-9]*[^/]*/$$')"
-    rm --one-file-system -rf /boot/Image /boot/dtbs
-    cp -av "$$mods/vmlinuz" /boot/Image
-    cp -av "$$mods/dtb" /boot/dtbs
+
+mkinitcpio:
+  modules:
+  - ext4
+  - vfat
 +also:
 - device/avaota-c1
 - packages/resize-rootfs

@@ -1,38 +1,26 @@
 name: Avaota C1
-arch: aarch64
-soc: sun50i-h616
 device: avaota-c1
 
 pacman:
   install:
-  # For regulatory.db
-  - wireless-regdb
-
   # Bootloader
   - uboot-avaota-c2
 
-  # Kernel
-  - linux-sun50i-h616
-
-sysconf:
-  chassis: embedded
-
 kernel:
   cmdline:
-  - clk_ignore_unused
-  - pd_ignore_unused
   - panic=30
   - loglevel=8
   path: /boot
-  kernel: Image
-  devicetree: dtbs/${platform}/${soc}-${device}.dtb
+
+sysconf:
+  chassis: embedded
 
 +also:
 - os/archlinuxarm
 - repo/renegade-project
 
-# Generic allwinner related config
-- device/allwinner
+# Allwinner H616 related config
+- device/sun50i-h616
 
 # USB Gadget tools
 - packages/systemd-gadget
