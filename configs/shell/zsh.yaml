@@ -7,6 +7,7 @@ filesystem:
     - path: /etc/skel/.bashrc
       stage: pre-user
       content: |
-        if [ -n "$$BASH" ] && [[ "$$-" = *i* ]]; then
+        if [ -n "$$BASH" ] && [[ "$$-" = *i* ]] && [ -z "$$SWITCH_FROM_BASH" ]; then
+          export SWITCH_FROM_BASH=true
           exec zsh
         fi
