@@ -34,22 +34,35 @@ def progress_cb(target, percent, n, i):
 
 
 class PacmanRepoServer(SerializableDict):
+	ctx: ArchBuilderContext
 	url: str = None
 	name: str = None
 	mirror: bool = False
 
 	def __init__(
 		self,
+		ctx: ArchBuilderContext,
 		name: str = None,
 		url: str = None,
 		mirror: bool = None
 	):
+		self.ctx = ctx
 		if url is not None: self.url = url
 		if name is not None: self.name = name
 		if mirror is not None: self.mirror = mirror
 
+	def append_server(self, lines: list[str]):
+		if self.mirror:
+			lines.append(f"# Mirror {self.name}\n")
+			log.debug(f"use mirror {self.name} url {self.url}")
+		else:
+			lines.append("# Original Repo\n")
+			log.debug(f"use original repo url {self.url}")
+		for _ in range(self.ctx.retry_count):
+			lines.append(f"Server = {self.url}\n")
 
 class PacmanRepo(SerializableDict):
+	ctx: ArchBuilderContext
 	name: str = None
 	priority: int = 10000
 	servers: list[PacmanRepoServer] = None
@@ -59,6 +72,7 @@ class PacmanRepo(SerializableDict):
 
 	def __init__(
 		self,
+		ctx: ArchBuilderContext,
 		name: str = None,
 		priority: int = None,
 		servers: list[PacmanRepoServer] = None,
@@ -66,6 +80,7 @@ class PacmanRepo(SerializableDict):
 		publickey: str = None,
 		keyid: str = None
 	):
+		self.ctx = ctx
 		if name is not None: self.name = name
 		if priority is not None: self.priority = priority
 		if servers is not None: self.servers = servers
@@ -81,10 +96,22 @@ class PacmanRepo(SerializableDict):
 		mirror: bool = None
 	):
 		self.servers.append(PacmanRepoServer(
+			ctx=self.ctx,
 			name=name,
 			url=url,
 			mirror=mirror,
 		))
+
+	def append_repo(self, lines: list[str]):
+		for server in self.servers:
+			server.append_server(lines)
+
+
+def is_remote(val: str) -> bool:
+	if not val: return False
+	if val.startswith("http://"): return True
+	if val.startswith("https://"): return True
+	return False
 
 
 class Pacman:
@@ -103,18 +130,35 @@ class Pacman:
 		"""
 		for repo in self.repos:
 			lines.append(f"[{repo.name}]\n")
-			if rootfs and repo.mirrorlist is not None:
-				lines.append(f"Include = /etc/pacman.d/{repo.name}-mirrorlist\n")
-			else:
-				for server in repo.servers:
-					if server.mirror:
-						lines.append(f"# Mirror {server.name}\n")
-						log.debug(f"use mirror {server.name} url {server.url}")
-					else:
-						lines.append("# Original Repo\n")
-						log.debug(f"use original repo url {server.url}")
-					for _ in range(self.ctx.retry_count):
-						lines.append(f"Server = {server.url}\n")
+			if rootfs and repo.mirrorlist:
+				if is_remote(repo.mirrorlist):
+					lines.append(f"Include = /etc/pacman.d/{repo.name}-mirrorlist\n")
+					continue
+				elif repo.mirrorlist == "default":
+					lines.append("Include = /etc/pacman.d/mirrorlist\n")
+					continue
+				elif repo.mirrorlist.startswith("/"):
+					lines.append(f"Include = {repo.mirrorlist}\n")
+					continue
+				elif repo.mirrorlist.startswith("distro:"):
+					dist = self.ctx.get("distro.id", None)
+					matches = repo.mirrorlist[7:].split(",")
+					if dist and matches and dist in matches:
+						lines.append("Include = /etc/pacman.d/mirrorlist\n")
+						continue
+				else: raise ArchBuilderConfigError(
+					f"unknown value {repo.mirrorlist} for mirrorlist"
+				)
+			repo.append_repo(lines)			
+
+	def append_mirrorlist(self, lines: list[str]):
+		servers: list[PacmanRepoServer] = []
+		for repo in self.repos:
+			for server in repo.servers:
+				if not any((server.name == local.name for local in servers)):
+					servers.append(server)
+		for server in servers:
+			server.append_server(lines)
 
 	def append_config(self, lines: list[str]):
 		"""
@@ -153,7 +197,7 @@ class Pacman:
 
 		# Download and add public keys and mirrorlist
 		for repo in self.repos:
-			if repo.mirrorlist is not None:
+			if is_remote(repo.mirrorlist):
 				mirrorlist = os.path.join(self.ctx.work, f"etc/pacman.d/{repo.name}-mirrorlist")
 				cmds = ["wget", repo.mirrorlist, "-O", mirrorlist]
 				ret = self.ctx.run_external(cmds)
@@ -358,7 +402,7 @@ class Pacman:
 				raise ArchBuilderConfigError("bad repo name")
 
 			# create pacman repo instance
-			pacman_repo = PacmanRepo(name=repo["name"])
+			pacman_repo = PacmanRepo(self.ctx, name=repo["name"])
 			if "priority" in repo:
 				pacman_repo.priority = repo["priority"]
 

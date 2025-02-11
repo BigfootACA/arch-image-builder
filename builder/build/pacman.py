@@ -70,6 +70,15 @@ def gen_config(ctx: ArchBuilderContext, pacman: Pacman):
 	log.info(f"generated pacman config {conf}")
 
 
+def gen_mirrorlist(ctx: ArchBuilderContext, pacman: Pacman):
+	conf = os.path.join(ctx.get_rootfs(), "etc/pacman.d/mirrorlist")
+	lines: list[str] = []
+	pacman.append_mirrorlist(lines)
+	with open_config(conf) as f:
+		f.writelines(lines)
+	log.info(f"generated pacman mirrorlist {conf}")
+
+
 def proc_pacman(ctx: ArchBuilderContext, pacman: Pacman):
 	"""
 	Install or remove packages for rootfs, and generate pacman.conf
@@ -77,6 +86,8 @@ def proc_pacman(ctx: ArchBuilderContext, pacman: Pacman):
 	install_all(ctx, pacman)
 	uninstall_all(ctx, pacman)
 	gen_config(ctx, pacman)
+	if ctx.get("pacman.gen_mirrorlist", True):
+		gen_mirrorlist(ctx, pacman)
 
 
 def proc_pacman_keyring(ctx: ArchBuilderContext, pacman: Pacman):
