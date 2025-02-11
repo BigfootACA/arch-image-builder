@@ -56,4 +56,6 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.preset }}
-          path: artifacts/*.7z
+          path: |
+            artifacts/*.7z
+            artifacts/*.iso
