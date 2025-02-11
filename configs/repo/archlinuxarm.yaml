@@ -3,15 +3,19 @@ pacman:
   - name: core
     priority: 100
     server: http://mirror.archlinuxarm.org/$$arch/$$repo
+    mirrorlist: distro:archlinuxarm
   - name: extra
     priority: 110
     server: http://mirror.archlinuxarm.org/$$arch/$$repo
+    mirrorlist: distro:archlinuxarm
   - name: alarm
     priority: 120
     server: http://mirror.archlinuxarm.org/$$arch/$$repo
+    mirrorlist: distro:archlinuxarm
   - name: aur
     priority: 130
     server: http://mirror.archlinuxarm.org/$$arch/$$repo
+    mirrorlist: distro:archlinuxarm
   trust:
   - builder@archlinuxarm.org
   install:

@@ -3,6 +3,7 @@ pacman:
   - name: blackarch
     priority: 1000
     server: https://www.blackarch.org/$$repo/os/$$arch
+    mirrorlist: distro:blackarch
   trust:
   - noptrix@nullsecurity.net
   install:

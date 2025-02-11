@@ -3,12 +3,15 @@ pacman:
   - name: core
     priority: 100
     server: https://geo.mirror.pkgbuild.com/$$repo/os/$$arch
+    mirrorlist: distro:archlinux
   - name: extra
     priority: 110
     server: https://geo.mirror.pkgbuild.com/$$repo/os/$$arch
+    mirrorlist: distro:archlinux
   - name: multilib
     priority: 120
     server: https://geo.mirror.pkgbuild.com/$$repo/os/$$arch
+    mirrorlist: distro:archlinux
   trust:
   - eworm@archlinux.org
   - dvzrv@archlinux.org
