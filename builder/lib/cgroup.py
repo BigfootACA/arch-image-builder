@@ -1,12 +1,13 @@
 import os
 import time
 import signal
+from builder.lib.mount import MountTab
 from logging import getLogger
 log = getLogger(__name__)
 
 
 class CGroup:
-	fs: str = "/sys/fs/cgroup"
+	fs: str
 	name: str
 
 	@property
@@ -91,6 +92,18 @@ class CGroup:
 			# wait...
 			time.sleep(1)
 
+	def find_pid_ctrl(self) -> str:
+		tab = MountTab.parse_mounts()
+		for cg in tab.find_target("/sys/fs/cgroup"):
+			if cg.fstype == "cgroup2":
+				return cg.target
+		for cg in tab.find_fstype("cgroup"):
+			if "pids" in cg.option:
+				return cg.target
+		for cg in tab.find_fstype("cgroup2"):
+			return cg.target
+		raise OSError("no pids cgroup found")
+
 	def __init__(self, name: str, fs: str = None):
-		if fs: self.fs = fs
+		self.fs = fs if fs else self.find_pid_ctrl()
 		self.name = name
