@@ -36,6 +36,7 @@ def progress_cb(target, percent, n, i):
 class PacmanRepoServer(SerializableDict):
 	ctx: ArchBuilderContext
 	url: str = None
+	config_url: str = None
 	name: str = None
 	mirror: bool = False
 
@@ -44,22 +45,24 @@ class PacmanRepoServer(SerializableDict):
 		ctx: ArchBuilderContext,
 		name: str = None,
 		url: str = None,
+		config_url: str = None,
 		mirror: bool = None
 	):
 		self.ctx = ctx
 		if url is not None: self.url = url
+		if config_url is not None: self.config_url = config_url
 		if name is not None: self.name = name
 		if mirror is not None: self.mirror = mirror
 
 	def append_server(self, lines: list[str]):
 		if self.mirror:
 			lines.append(f"# Mirror {self.name}\n")
-			log.debug(f"use mirror {self.name} url {self.url}")
+			log.debug(f"use mirror {self.name} url {self.config_url}")
 		else:
 			lines.append("# Original Repo\n")
-			log.debug(f"use original repo url {self.url}")
+			log.debug(f"use original repo url {self.config_url}")
 		for _ in range(self.ctx.retry_count):
-			lines.append(f"Server = {self.url}\n")
+			lines.append(f"Server = {self.config_url}\n")
 
 class PacmanRepo(SerializableDict):
 	ctx: ArchBuilderContext
@@ -93,12 +96,14 @@ class PacmanRepo(SerializableDict):
 		self,
 		name: str = None,
 		url: str = None,
+		config_url: str = None,
 		mirror: bool = None
 	):
 		self.servers.append(PacmanRepoServer(
 			ctx=self.ctx,
 			name=name,
 			url=url,
+			config_url=config_url,
 			mirror=mirror,
 		))
 
@@ -419,21 +424,23 @@ class Pacman:
 			if "keyid" in repo:
 				pacman_repo.keyid = repo["keyid"]
 
-			originals: list[str] = []
-			servers: list[str] = []
+			servers: list[dict[str, str]] = []
 
-			# add all original repo url
-			if "server" in repo: servers.append(repo["server"])
-			if "servers" in repo: servers.extend(repo["server"])
+			# add all repo url
+			if "server" in repo: servers.append({"config_url": repo["server"]})
+			if "servers" in repo: servers.extend({"config_url": url} for url in repo["server"])
 			if len(servers) <= 0:
 				raise ArchBuilderConfigError("no any original repo url found")
 
-			# resolve original repo url
+			# resolve repo url
+			values = {
+				"arch": self.ctx.tgt_arch,
+				"repo": repo["name"],
+			}
 			for server in servers:
-				originals.append(resolve_simple_values(server, {
-					"arch": self.ctx.tgt_arch,
-					"repo": repo["name"],
-				}))
+				server["real_url"] = resolve_simple_values(
+					server["config_url"], values
+				)
 
 			# add repo mirror url
 			for mirror in mirrors:
@@ -446,20 +453,23 @@ class Pacman:
 						raise ArchBuilderConfigError("original url not set")
 					if "mirror" not in repo:
 						raise ArchBuilderConfigError("mirror url not set")
-					for original in originals:
-						if original.startswith(repo["original"]):
-							path = original[len(repo["original"]):]
-							real_url = repo["mirror"] + path
+					for server in servers:
+						if server["config_url"].startswith(repo["original"]):
+							len_orig = len(repo["original"])
+							real_url = repo["mirror"] + server["real_url"][len_orig:]
+							config_url = repo["mirror"] + server["config_url"][len_orig:]
 							pacman_repo.add_server(
 								name=mirror["name"],
 								url=real_url,
+								config_url=config_url,
 								mirror=True,
 							)
 
-			# add original url
-			for original in originals:
+			# add url to repos
+			for server in servers:
 				pacman_repo.add_server(
-					url=original,
+					url=server["real_url"],
+					config_url=server["config_url"],
 					mirror=False
 				)
 
