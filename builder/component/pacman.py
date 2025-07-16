@@ -526,8 +526,18 @@ class Pacman:
 		Install packages via pacman
 		"""
 		if len(pkgs) == 0: return
-		local_pkgs = [item for item in pkgs if ".pkg.tar." in item]
-		dl_pkgs = [item for item in pkgs if ".pkg.tar." not in item]
+		deduplicate: list[str] = []
+		dl_pkgs: list[str] = []
+		local_pkgs: list[str] = []
+		for pkg in pkgs:
+			if ".pkg.tar." in pkg:
+				local_pkgs.append(pkg)
+			else:
+				name = pkg.split("/")[-1] if "/" in pkg else pkg
+				if name in deduplicate:
+					continue
+				deduplicate.append(name)
+				dl_pkgs.append(pkg)
 		ps = " ".join(pkgs)
 		log.info(f"installing packages {ps}")
 		if dl_pkgs:
@@ -545,7 +555,16 @@ class Pacman:
 		"""
 		Download packages via pacman
 		"""
-		dl_pkgs = [item for item in pkgs if ".pkg.tar." not in item]
+		deduplicate: list[str] = []
+		dl_pkgs: list[str] = []
+		for pkg in pkgs:
+			if ".pkg.tar." in pkg:
+				continue
+			name = pkg.split("/")[-1] if "/" in pkg else pkg
+			if name in deduplicate:
+				continue
+			deduplicate.append(name)
+			dl_pkgs.append(pkg)
 		if len(dl_pkgs) == 0: return
 		core_db = "var/lib/pacman/sync/core.db"
 		if not os.path.exists(os.path.join(self.root, core_db)):
