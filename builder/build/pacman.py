@@ -41,6 +41,16 @@ def uninstall_all(ctx: ArchBuilderContext, pacman: Pacman):
 	pacman.uninstall(packages)
 
 
+def replace_all(ctx: ArchBuilderContext, pacman: Pacman):
+	"""
+	Replace all pacman packages
+	"""
+	packages = ctx.get("pacman.replaces", [])
+	if len(packages) <= 0: return
+	for pkg in packages:
+		log.info(f"replacing {pkg['old']} with {pkg['new']}")
+		pacman.replace([pkg["old"]], [pkg["new"]])
+
 def append_config(ctx: ArchBuilderContext, lines: list[str]):
 	"""
 	Generate basic pacman.conf for rootfs
@@ -85,6 +95,7 @@ def proc_pacman(ctx: ArchBuilderContext, pacman: Pacman):
 	"""
 	install_all(ctx, pacman)
 	uninstall_all(ctx, pacman)
+	replace_all(ctx, pacman)
 	gen_config(ctx, pacman)
 	if ctx.get("pacman.gen_mirrorlist", True):
 		gen_mirrorlist(ctx, pacman)
