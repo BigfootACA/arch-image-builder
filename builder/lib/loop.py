@@ -154,8 +154,16 @@ def loop_setup(
 		lc = LoopConfig(fd=fd, block_size=block_size, info=li)
 		loop = os.open(dev, os.O_RDWR)
 		if loop < 0: raise OSError(f"open loop device {dev} failed")
-		ret = fcntl.ioctl(loop, LOOP_CONFIGURE, lc)
-		if ret != 0: raise OSError(f"configure loop device {dev} with {path} failed")
+		try:
+			ret = fcntl.ioctl(loop, LOOP_CONFIGURE, lc)
+			if ret != 0: raise OSError(f"configure loop device {dev} with {path} failed")
+		except OSError as e:
+			if e.errno != 22:
+				raise
+			ret = fcntl.ioctl(loop, LOOP_SET_FD, fd)
+			if ret != 0: raise OSError(f"loop set fd for device {dev} with {path} failed")
+			ret = fcntl.ioctl(loop, LOOP_SET_STATUS64, li)
+			if ret != 0: raise OSError(f"loop set status for device {dev} with {path} failed")
 	finally:
 		if loop >= 0: os.close(loop)
 		if opened >= 0: os.close(opened)
