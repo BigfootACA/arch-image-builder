@@ -503,14 +503,15 @@ class Pacman:
 			self.handle.add_cachedir(cache)
 		self.init_config()
 
-	def uninstall(self, pkgs: list[str]):
+	def uninstall(self, pkgs: list[str], /, opts: list[str]=[]):
 		"""
 		Uninstall packages via pacman
 		"""
 		if len(pkgs) == 0: return
 		ps = " ".join(pkgs)
 		log.info(f"removing packages {ps}")
-		args = ["--needed", "--remove"]
+		args = ["--remove"]
+		args.extend(opts)
 		args.extend(pkgs)
 		self.pacman(args)
 
@@ -550,6 +551,20 @@ class Pacman:
 			self.pacman(args)
 		if local_pkgs:
 			self.install_local(local_pkgs)
+
+	def replace(self, old_pkgs: list[str], new_pkgs: list[str], /, force: bool=False):
+		"""
+		Replace packages via pacman
+		"""
+		if len(new_pkgs) == 0 or len(old_pkgs) == 0: return
+		ops = " ".join(old_pkgs)
+		nps = " ".join(new_pkgs)
+		log.info(f"replacing packages {ops} with {nps}")
+		try:
+			self.uninstall(old_pkgs, opts=["--nodeps", "--nodeps"])
+		except:
+			log.warning("uninstall old packages failed")
+		self.install(new_pkgs, force=force)
 
 	def download(self, pkgs: list[str], nogpg: bool=False):
 		"""
