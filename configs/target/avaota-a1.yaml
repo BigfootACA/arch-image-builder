@@ -1,0 +1,19 @@
+name: Avaota A1
+target: avaota-a1
+arch: aarch64
+firmware:
+  uboot-spl: /boot/u-boot-sunxi-with-spl.bin
+fstab:
+  dev: partlabel
+bootloader:
+  timeout: 3
+  method:
+  - systemd-boot
+  - extlinux
+mkinitcpio:
+  no_fallback: yes
++also:
+- device/avaota-a1
+- packages/resize-rootfs
+- target/partitions/allwinner
+- common/default-boot

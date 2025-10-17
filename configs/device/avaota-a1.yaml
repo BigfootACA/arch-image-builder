@@ -1,0 +1,47 @@
+name: Avaota A1
+device: avaota-a1
+
+pacman:
+  install:
+  # Bootloader
+  - uboot-avaota-a1
+
+kernel:
+  cmdline:
+  - panic=30
+  - loglevel=8
+  path: /boot
+
+sysconf:
+  chassis: embedded
+
++also:
+- os/archlinuxarm
+- repo/renegade-project
+
+# Allwinner T527 related config
+- device/soc/sun55i-t527
+
+# USB Gadget tools
+- packages/systemd-gadget
+
+# Network Daemon
+- packages/systemd-networkd
+
+# Android Debug Bridge Daemon via USB Gadget
+- packages/adbd
+
+# OpenSSH Server
+- packages/openssh
+
+# Text editor
+- packages/editor
+
+# Bluetooth related services
+- packages/bluez
+
+# Root without password
+- common/wheel-nopasswd
+
+# Reinitialize pacman-key when boot
+- common/pacman-init
