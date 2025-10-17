@@ -1,6 +1,9 @@
 distro:
   name: Arch Linux ARM
   id: archlinuxarm
+  identifier:
+    name: ArchLinuxARM
+    id: alarm
 pacman:
   install:
   - core/base

@@ -223,11 +223,11 @@ filesystem:
         archiso_name_plat='U-Boot'
       fi
       archiso_name_platform="$${archiso_name_cpu} $${archiso_name_plat}"
-      default=${distro.id}
+      default=${distro.identifier.id}
       timeout=15
       timeout_style=menu
       menuentry "${distro.name} install medium (OS: ${arch}, Firmware: $${archiso_name_platform})" \
-        --class arch --class gnu-linux --class gnu --class os --id '${distro.id}' {
+        --class arch --class gnu-linux --class gnu --class os --id '${distro.identifier.id}' {
         set gfxpayload=keep
         echo "Loading kernel..."
         linux /arch/boot/${arch}/${kernel.kernel} ${@kernel.cmdline}
@@ -236,7 +236,7 @@ filesystem:
         echo "Booting..."
       }
       menuentry "${distro.name} install medium run in RAM (OS: ${arch}, Firmware: $${archiso_name_platform})" \
-        --class arch --class gnu-linux --class gnu --class os --id '${distro.id}-ram' {
+        --class arch --class gnu-linux --class gnu --class os --id '${distro.identifier.id}-ram' {
         set gfxpayload=keep
         echo "Loading kernel..."
         linux /arch/boot/${arch}/${kernel.kernel} ${@kernel.cmdline} copytoram=1
