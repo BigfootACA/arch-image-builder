@@ -1,0 +1,58 @@
+name: radxa-dragon-q6a
+device: radxa-dragon-q6a
+
+pacman:
+  install:
+  # Device firmware
+  - linux-firmware-radxa-dragon-q6a
+  # WiFi driver and firmware
+  - linux-mainline-aarch64-aic8800
+  - linux-firmware-realtek
+  - wireless-regdb
+  replaces:
+  # ALSA UCM config
+  - old: alsa-ucm-conf
+    new: alsa-ucm-conf-radxa-dragon-q6a
+
+kernel:
+  cmdline:
+  - panic=30
+  - loglevel=8
+  path: /boot
+
+mkinitcpio:
+  modules:
+  # Modules for Radxa Dragon Q6A
+  - gpio_keys
+  - leds_gpio
+  - rtc_ds1307
+
+sysconf:
+  chassis: embedded
+
++also:
+- os/archlinuxarm
+- repo/renegade-project
+- repo/archlinuxcn
+- repo/arch4edu
+
+# Qualcomm QCS6490 related config
+- device/soc/qcs6490
+
+# OpenSSH Server
+- packages/openssh
+
+# Text editor
+- packages/editor
+
+# Bluetooth related services
+- packages/bluez
+
+# FastRPC support
+- packages/fastrpc
+
+# Root without password
+- common/wheel-nopasswd
+
+# Reinitialize pacman-key when boot
+- common/pacman-init

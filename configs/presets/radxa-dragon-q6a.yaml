@@ -1,0 +1,8 @@
+package:
+  file: ArchLinuxARM-Radxa-Dragon-Q6A-CLI-${version}.7z
+  configs:
+  - target/radxa-dragon-q6a
+  - common/disk-4gb
+workflows:
+  auto: yes
+  arch: aarch64

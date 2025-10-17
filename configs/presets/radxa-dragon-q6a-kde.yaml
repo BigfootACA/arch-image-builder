@@ -1,0 +1,10 @@
+package:
+  file: ArchLinuxARM-Radxa-Dragon-Q6A-KDE-${version}.7z
+  configs:
+  - target/radxa-dragon-q6a
+  - desktop/plasma-wayland
+  - locale/multi
+  - common/disk-8gb
+workflows:
+  auto: yes
+  arch: aarch64

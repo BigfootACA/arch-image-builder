@@ -1,0 +1,23 @@
+name: Radxa Dragon Q6A
+target: radxa-dragon-q6a
+arch: aarch64
+fstab:
+  dev: partuuid
+pacman:
+  install:
+  - fastfetch
+  - usbutils
+bootloader:
+  timeout: 3
+  method:
+  - embloader
+  - systemd-boot
+mkinitcpio:
+  no_fallback: yes
++also:
+- device/radxa-dragon-q6a
+- packages/resize-rootfs
+- packages/network-manager
+- packages/embloader
+- target/partitions/uefi-boot
+- common/default-boot
