@@ -48,7 +48,7 @@ class DiskLayout(DiskIO, DiskArea, SerializableDict):
 		start, end, size = -1, -1, -1
 		if "start" in config: start = self.size_to_sectors(config["start"])
 		if "offset" in config: start = self.size_to_sectors(config["offset"])
-		if "end" in config: end = self.size_to_sectors(config["end"])
+		if "end" in config: end = self.size_to_sectors(config["end"]) - 1
 		if "size" in config: size = self.size_to_sectors(config["size"])
 		if "length" in config: size = self.size_to_sectors(config["length"])
 		if "start_lba" in config: start = config["start_lba"]
