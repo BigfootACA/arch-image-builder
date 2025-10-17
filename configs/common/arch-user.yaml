@@ -1,9 +1,12 @@
 # Default user for ArchLinux
 sysconf:
   user:
-  - name: arch
-    password: arch
-    groups: wheel
-  - name: root
-    uid: 0
-    password: root
+    arch:
+      name: arch
+      password: arch
+      groups:
+      - wheel
+    root:
+      name: root
+      uid: 0
+      password: root
