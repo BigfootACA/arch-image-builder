@@ -1,0 +1,4 @@
+firmware:
+  disk_name: ufs.img
+  disk_sector: 4096
+  esp_size: 300MiB
