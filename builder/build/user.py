@@ -29,7 +29,10 @@ def proc_user(ctx: ArchBuilderContext, cfg: dict):
 	if "gid" in cfg: cmds.extend(["-g", str(cfg["gid"])])
 	if "home" in cfg: cmds.extend(["-d", cfg["home"]])
 	if "shell" in cfg: cmds.extend(["-s", cfg["shell"]])
-	if "groups" in cfg: cmds.extend(["-G", str(cfg["groups"])])
+	if "groups" in cfg:
+		g = cfg["groups"]
+		grps = ",".join(g) if type(g) is list else str(g)
+		cmds.extend(["-G", grps])
 	cmds.append(name)
 
 	# run useradd or usermod
