@@ -1,0 +1,48 @@
+name: 100ask-dshanpi-a1
+device: 100ask-dshanpi-a1
+
+pacman:
+  install:
+  # Bootloader
+  - uboot-dshanpi-a1
+  # WiFi and Bluetooth firmware
+  - linux-firmware-realtek
+
+kernel:
+  cmdline:
+  - panic=30
+  - loglevel=8
+  path: /boot
+
+mkinitcpio:
+  modules:
+  - rk8xx_i2c
+  - rk808_regulator
+
+sysconf:
+  chassis: embedded
+
++also:
+- os/archlinuxarm
+- repo/renegade-project
+
+# Rockchip RK3576 related config
+- device/soc/rk3576
+
+# Network Daemon
+- packages/systemd-networkd
+
+# OpenSSH Server
+- packages/openssh
+
+# Text editor
+- packages/editor
+
+# Bluetooth related services
+- packages/bluez
+
+# Root without password
+- common/wheel-nopasswd
+
+# Reinitialize pacman-key when boot
+- common/pacman-init

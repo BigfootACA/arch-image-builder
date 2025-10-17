@@ -1,0 +1,27 @@
+name: 100Ask DShanPi A1
+target: dshanpi-a1
+arch: aarch64
+firmware:
+  idbloader: /usr/lib/firmware/100ask/dshanpi-a1/rk3576_idblock.img
+  u-boot: /usr/lib/firmware/100ask/dshanpi-a1/u-boot.itb
+pacman:
+  install:
+  - fastfetch
+  - usbutils
+fstab:
+  dev: partuuid
+bootloader:
+  timeout: 3
+  method:
+  - embloader
+  - systemd-boot
+mkinitcpio:
+  no_fallback: yes
++also:
+- device/dshanpi-a1
+- packages/resize-rootfs
+- packages/network-manager
+- packages/systemd-gadget
+- packages/embloader
+- target/partitions/rockchip
+- common/default-boot
