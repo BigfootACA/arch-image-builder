@@ -1,0 +1,7 @@
+pacman:
+  install:
+  - iwd
+  - wireless-regdb
+systemd:
+  enable:
+  - iwd.service
