@@ -65,7 +65,7 @@ def proc_group(ctx: ArchBuilderContext, cfg: dict):
 	if "name" not in cfg: raise ArchBuilderConfigError("groupname not set")
 	name = cfg["name"]
 	cmds = []
-	if ctx.passwd.lookup_name(name) is None:
+	if ctx.group.lookup_name(name) is None:
 		# group is not exists, create it
 		cmds.append("groupadd")
 		action = "created"
