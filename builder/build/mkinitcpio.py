@@ -62,33 +62,96 @@ def gen_config(ctx: ArchBuilderContext):
 		# TODO: add more options
 
 
+def parse_preset_file(ctx: ArchBuilderContext, path: str) -> list[dict]:
+	"""
+	Parse an initramfs preset file
+	"""
+	snippet = """
+	for preset in "${PRESETS[@]}"; do
+		eval echo "\\"initrd;${preset};\\$${preset}_image\\"";
+	done
+	"""
+	full_snippet = f"source \"{path}\"\n{snippet}\n"
+	ret, data = ctx.run_external(["bash", "-e"], stdin=full_snippet, want_stdout=True)
+	if ret != 0:
+		raise ArchBuilderConfigError(f"cannot parse initramfs preset {path}")
+	ret = []
+	for lines in data.splitlines():
+		parts = lines.split(";")
+		if len(parts) != 3 or parts[0] != "initrd":
+			continue
+		real_image = os.path.join(ctx.get_rootfs(), parts[2].lstrip("/"))
+		ret.append({
+			"preset": parts[1],
+			"path": parts[2],
+			"real_path": real_image,
+		})
+	return ret
+
+
 def recreate_initrd(ctx: ArchBuilderContext, path: str):
-	"""
-	Really run mkinitcpio
-	"""
-	chroot_run(ctx, ["mkinitcpio", "-p", path])
-	# do not check return value of mkinitcpio
-
-
-def recreate_initrd_no_autodetect(ctx: ArchBuilderContext, path: str):
 	"""
 	Create a full initramfs without autodetect
 	In build stage, mkinitcpio can not find out needs modules, it will cause unbootable.
 	"""
+	fake_autodetect_snippet = """
+	build() {
+		declare -gri mkinitcpio_autodetect=1
+		_autodetect_cache[_placeholder_]=1
+		return 0
+	}
+	help() {
+		echo "Fake autodetect hook for arch-image-builder"
+	}
+	"""
 	tmp = os.path.join(ctx.get_rootfs(), "tmp")
+	presets = parse_preset_file(ctx, path)
+	for preset in presets:
+		if os.path.exists(preset["real_path"]):
+			log.debug(f"remove old initramfs {preset["real_path"]}")
+			os.remove(preset["real_path"])
+
+	autodetect_path = None
+
 	with NamedTemporaryFile("w", dir=tmp) as temp:
 
 		# copy original preset
 		with open(path, "r") as f:
 			temp.write(f.read())
 
-		# skip autodetect
-		temp.write("\ndefault_options=\"-S autodetect\"\n")
+		# skip autodetect or use fake one
+		if ctx.get("mkinitcpio.fake_autodetect", True):
+			autodetect_path = os.path.join(ctx.get_rootfs(), "usr/lib/initcpio/install/autodetect")
+			if os.path.exists(autodetect_path + ".bak"):
+				os.remove(autodetect_path)
+			else:
+				os.rename(autodetect_path, autodetect_path + ".bak")
+			with open(autodetect_path, "w") as f:
+				f.write(fake_autodetect_snippet)
+			log.debug("use fake autodetect hook")
+		elif ctx.get("mkinitcpio.no_autodetect", False):
+			temp.write("\ndefault_options=\"-S autodetect\"\n")
+
+		# skip fallback
+		if ctx.get("mkinitcpio.no_fallback", True):
+			if len(presets) > 0:
+				presets = [p for p in presets if p["preset"] != "fallback"]
+				val_presets = [p["preset"] for p in presets]
+				temp.write(f'PRESETS=({" ".join(val_presets)})\n')
+			else:
+				log.warning(f"cannot find any preset in {path}")
+
 		temp.flush()
 
 		# run mkinitcpio (with path in rootfs)
-		path = os.path.join("/tmp", os.path.basename(temp.name))
-		recreate_initrd(ctx, path)
+		preset_path = os.path.join("/tmp", os.path.basename(temp.name))
+		ret = chroot_run(ctx, ["mkinitcpio", "-p", preset_path])
+		if ret != 0 and not any(os.path.exists(file["real_path"]) for file in presets):
+			raise ArchBuilderConfigError(f"failed to create initramfs: {ret}")
+
+	if autodetect_path and os.path.exists(autodetect_path) and os.path.exists(autodetect_path + ".bak"):
+		os.remove(autodetect_path)
+		os.rename(autodetect_path + ".bak", autodetect_path)
 
 
 def recreate_initrds(ctx: ArchBuilderContext):
@@ -96,7 +159,6 @@ def recreate_initrds(ctx: ArchBuilderContext):
 	Regenerate all initramfs
 	"""
 	root = ctx.get_rootfs()
-	no_autodetect = ctx.get("mkinitcpio.no_autodetect", True)
 	folder = os.path.join(root, "etc/mkinitcpio.d")
 	if not os.path.exists(folder):
 		log.debug("skip recreate initrds")
@@ -105,9 +167,7 @@ def recreate_initrds(ctx: ArchBuilderContext):
 	# scan all initramfs preset and regenerate them
 	for preset in os.listdir(folder):
 		if not preset.endswith(".preset"): continue
-		path = os.path.join(folder, preset)
-		if not no_autodetect: recreate_initrd(ctx, path)
-		else: recreate_initrd_no_autodetect(ctx, path)
+		recreate_initrd(ctx, os.path.join(folder, preset))
 
 
 def proc_mkinitcpio(ctx: ArchBuilderContext):
