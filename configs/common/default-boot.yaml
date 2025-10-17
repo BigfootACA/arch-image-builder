@@ -1,0 +1,12 @@
+# Default boot option
+bootloader:
+  items:
+  - type: linux
+    default: yes
+    id: ${distro.identifier.id}-${device}
+    name: ${distro.name} for ${name}
+    path: ${kernel.path}
+    kernel: /${kernel.kernel}
+    initramfs: /${kernel.initramfs}
+    devicetree: /${kernel.devicetree}
+    cmdline: ${@kernel.cmdline}
