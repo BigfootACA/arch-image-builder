@@ -1,0 +1,7 @@
+package:
+  file: ArchLinuxARM-Radxa-ROCK-4A-${version}.7z
+  configs:
+  - target/radxa-rock-4a
+workflows:
+  auto: yes
+  arch: aarch64
