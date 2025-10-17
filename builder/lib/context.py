@@ -129,8 +129,9 @@ class ArchBuilderContext:
 		"""
 		Get config value
 		"""
-		try: return dict_get(key, self.config)
-		except: return default
+		try: ret = dict_get(key, self.config)
+		except: pass
+		return default if ret is None else ret
 
 	def get_rootfs(self): return os.path.join(self.work, "rootfs")
 	def get_output(self): return os.path.join(self.work, "output")
