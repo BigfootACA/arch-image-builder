@@ -47,6 +47,8 @@ def gen_config(ctx: ArchBuilderContext):
 	add_values(ctx, "mkinitcpio.binaries", binaries)
 	add_values(ctx, "mkinitcpio.files", files)
 
+	compress = ctx.get("mkinitcpio.compress", None)
+
 	# write mkinitcpio.conf to rootfs
 	root = ctx.get_rootfs()
 	cfg = os.path.join(root, "etc/mkinitcpio.conf")
@@ -55,6 +57,8 @@ def gen_config(ctx: ArchBuilderContext):
 		f.write("BINARIES=(%s)\n" % (" ".join(binaries)))
 		f.write("FILES=(%s)\n" % (" ".join(files)))
 		f.write("HOOKS=(%s)\n" % (" ".join(hooks)))
+		if compress is not None:
+			f.write(f"COMPRESSION=\"{compress}\"\n")
 		# TODO: add more options
 
 
