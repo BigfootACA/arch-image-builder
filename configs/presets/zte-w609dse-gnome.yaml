@@ -1,0 +1,8 @@
+package:
+  file: ArchLinuxARM-ZTE-W609D-SE-GNOME-${version}.7z
+  configs:
+  - target/zte-w609dse
+  - desktop/gnome
+workflows:
+  auto: yes
+  arch: aarch64

@@ -1,0 +1,71 @@
+name: ZTE W609D SE
+device: zte-w609dse
+
+pacman:
+  install:
+  # Bootloader
+  - uboot-zte-w609dse
+  # WiFi and Bluetooth firmware
+  - linux-firmware-zte-w609dse
+
+kernel:
+  cmdline:
+  - panic=30
+  - loglevel=8
+  path: /boot
+
+mkinitcpio:
+  modules:
+  # Modules for ZTE W609D SE
+  - analogix_dp
+  - dw_hdmi
+  - dw_hdmi_qp
+  - leds_gpio
+  - panel_edp
+  - phy_rockchip_naneng_edp
+  - pwm_bl
+  - rk8xx_i2c
+  - rk808_regulator
+
+filesystem:
+  files:
+  - path: /etc/modprobe.d/mt7993s.conf
+    stage: pre-user
+    content: |
+      # Workaround for MT7991 firmware load order
+      softdep btmtk pre: mt7663s
+      blacklist btmtksdio
+  - path: /etc/udev/rules.d/99-btmtksdio.rules
+    stage: pre-user
+    content: |
+      ACTION=="add", SUBSYSTEMS=="module", DEVPATH=="/module/mt7663s", RUN+="/usr/bin/modprobe btmtksdio"
+  - path: /etc/fw_env.config
+    stage: pre-user
+    content: |
+      /boot/uboot.env         0x0     0x1f000
+      /boot/uboot-redund.env  0x0     0x1f000
+
+sysconf:
+  chassis: laptop
+
++also:
+- os/archlinuxarm
+- repo/renegade-project
+
+# Rockchip RK3568 related config
+- device/soc/rk3568
+
+# OpenSSH Server
+- packages/openssh
+
+# Text editor
+- packages/editor
+
+# Bluetooth related services
+- packages/bluez
+
+# Root without password
+- common/wheel-nopasswd
+
+# Reinitialize pacman-key when boot
+- common/pacman-init

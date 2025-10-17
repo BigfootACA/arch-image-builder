@@ -1,0 +1,23 @@
+name: ZTE W609D SE
+target: zte-w609dse
+arch: aarch64
+firmware:
+  disk_name: emmc.img
+  disk_size: 6GiB
+  idbloader: /usr/lib/firmware/zte/w609dse/idbloader.img
+  u-boot: /usr/lib/firmware/zte/w609dse/u-boot.itb
+  trust: /usr/lib/firmware/zte/w609dse/trust.img
+fstab:
+  dev: partlabel
+bootloader:
+  timeout: 3
+  method:
+  - systemd-boot
+  - extlinux
+mkinitcpio:
+  no_fallback: yes
++also:
+- device/zte-w609dse
+- packages/resize-rootfs
+- target/partitions/rockchip
+- common/default-boot
