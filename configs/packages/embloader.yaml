@@ -1,0 +1,25 @@
+pacman:
+  install:
+  - embloader
+
+embloader:
+  menu:
+    sdboot:
+      enabled: false
+  loaders:
+    efisetup:
+      title: Reboot into Firmware Setup
+      type: efisetup
+      complete: false
+      priority: 1000
+    poweroff:
+      title: Power Off
+      type: reboot
+      mode: poweroff
+      complete: false
+      priority: 1010
+    reboot:
+      title: Reboot
+      type: reboot
+      complete: false
+      priority: 1020
