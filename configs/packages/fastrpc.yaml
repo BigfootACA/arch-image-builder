@@ -1,0 +1,28 @@
+pacman:
+  install:
+    - quic-fastrpc-git
+
+filesystem:
+  files:
+  - path: /etc/sysusers.d/fastrpc.conf
+    stage: pre-user
+    content: |
+      g fastrpc - - -
+  - path: /etc/udev/rules.d/99-fastrpc.rules
+    stage: pre-user
+    content: |
+      SUBSYSTEM=="misc", KERNEL=="fastrpc-*", GROUP="fastrpc", MODE="0660"
+
+sysconf:
+  group:
+    fastrpc:
+      name: fastrpc
+      system: true
+  # Join default users to fastrpc group
+  user:
+    arch:
+      groups:
+      - fastrpc
+    alarm:
+      groups:
+      - fastrpc
