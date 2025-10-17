@@ -33,6 +33,8 @@ def proc_user(ctx: ArchBuilderContext, cfg: dict):
 		g = cfg["groups"]
 		grps = ",".join(g) if type(g) is list else str(g)
 		cmds.extend(["-G", grps])
+	if action == "created" and "system" in cfg and cfg["system"]:
+		cmds.append("-r")
 	cmds.append(name)
 
 	# run useradd or usermod
@@ -79,6 +81,8 @@ def proc_group(ctx: ArchBuilderContext, cfg: dict):
 
 	# add all options
 	if "gid" in cfg: cmds.extend(["-g", str(cfg["gid"])])
+	if action == "created" and "system" in cfg and cfg["system"]:
+		cmds.append("-r")
 	cmds.append(name)
 
 	# run groupadd or groupmod
