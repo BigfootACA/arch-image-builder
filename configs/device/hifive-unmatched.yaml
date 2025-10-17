@@ -1,0 +1,59 @@
+name: HiFive Unmatched A00
+device: hifive-unmatched-a00
+
+pacman:
+  install:
+  # Kernel
+  - core/linux
+
+kernel:
+  cmdline:
+  - panic=30
+  - loglevel=8
+  path: /boot
+  kernel: Image
+  initramfs: initramfs.img
+  devicetree: dtbs/${platform}/${device}${device_suffix}.dtb
+
+scripts:
+- stage: pre-initramfs
+  chroot: yes
+  code: |
+    mods="$$(pacman -Qql linux | grep -E '^/usr/lib/modules/[0-9]*\.[0-9]*\.[0-9]*[^/]*/$$')"
+    rm --one-file-system -rf /boot/dtbs
+    cp -a "$$mods/dtb" /boot/dtbs
+
+mkinitcpio:
+  modules:
+  # Modules for HiFive Unmatched
+  - at64
+  - da9063
+  - da9063-onkey
+  - da9063-wdt
+  - da9063-regulator
+  - rtc-da9063
+  - mmc-spi
+  - lm90
+  - nvme
+
+sysconf:
+  chassis: desktop
+
++also:
+- os/archriscv
+- repo/renegade-project
+
+# SiFive FU740 related config
+- device/soc/fu740-c000
+
+# OpenSSH Server
+- packages/openssh
+
+# Text editor
+- packages/editor
+
+# Root without password
+- common/wheel-nopasswd
+
+# Reinitialize pacman-key when boot
+- common/pacman-init

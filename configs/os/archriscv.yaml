@@ -1,0 +1,17 @@
+distro:
+  name: Arch Linux RiscV
+  id: archlinuxriscv
+  identifier:
+    name: ArchRiscV
+    id: archriscv
+pacman:
+  install:
+  - core/base
+sysconf:
+  hosts:
+  - 127.0.0.1 localhost
+  - 127.0.1.1 archlinux
+  hostname: archlinux
++also:
+- repo/archlinux
+- common/arch-user

@@ -1,0 +1,7 @@
+package:
+  file: ArchRiscV-HiFive-Unmatched-${version}.7z
+  configs:
+  - target/hifive-unmatched
+workflows:
+  auto: no
+  arch: riscv64

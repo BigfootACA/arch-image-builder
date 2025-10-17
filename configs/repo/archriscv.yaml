@@ -1,0 +1,18 @@
+pacman:
+  repo:
+  - name: core
+    priority: 100
+    server: https://archriscv.felixc.at/repo/$$repo
+    mirrorlist: distro:archriscv
+  - name: extra
+    priority: 110
+    server: https://archriscv.felixc.at/repo/$$repo
+    mirrorlist: distro:archriscv
+  - name: unsupported
+    priority: 120
+    server: https://archriscv.felixc.at/repo/$$repo
+    mirrorlist: distro:archriscv
+  trust:
+  - felixonmars@archlinux.org
+  install:
+  - core/archlinux-keyring

@@ -1,0 +1,17 @@
+name: HiFive Unmatched A00
+target: hifive-unmatched
+arch: riscv64
+fstab:
+  dev: partuuid
+bootloader:
+  timeout: 3
+  method:
+  - systemd-boot
+  - extlinux
+mkinitcpio:
+  no_fallback: yes
++also:
+- device/hifive-unmatched
+- packages/resize-rootfs
+- target/partitions/uefi-boot
+- common/default-boot
