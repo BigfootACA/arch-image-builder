@@ -1,0 +1,7 @@
+package:
+  file: ArchLinuxARM-Photonicat-${version}.7z
+  configs:
+  - target/photonicat
+workflows:
+  auto: no
+  arch: aarch64

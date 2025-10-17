@@ -1,0 +1,21 @@
+name: Ariaboard Photonicat
+target: photonicat
+arch: aarch64
+firmware:
+  idbloader: /usr/lib/firmware/ariaboard/photonicat/idbloader.img
+  u-boot: /usr/lib/firmware/ariaboard/photonicat/u-boot.itb
+  trust: /usr/lib/firmware/ariaboard/photonicat/trust.img
+fstab:
+  dev: partuuid
+bootloader:
+  timeout: 3
+  method:
+  - systemd-boot
+  - extlinux
+mkinitcpio:
+  no_fallback: yes
++also:
+- device/photonicat
+- packages/resize-rootfs
+- target/partitions/rockchip
+- common/default-boot

@@ -1,0 +1,49 @@
+name: Ariaboard Photonicat
+device: photonicat
+
+pacman:
+  install:
+  # Bootloader
+  - uboot-photonicat
+
+kernel:
+  cmdline:
+  - panic=30
+  - loglevel=8
+  path: /boot
+
+mkinitcpio:
+  modules:
+  # Modules for Ariaboard Photonicat
+  - photonicat_pmu
+  - photonicat_wdt
+  - photonicat_hwmon
+  - photonicat_supply
+  - photonicat_poweroff
+  - leds_photonicat
+  - rtc_photonicat
+
+sysconf:
+  chassis: embedded
+
++also:
+- os/archlinuxarm
+- repo/renegade-project
+
+# Rockchip RK3568 related config
+- device/soc/rk3568
+
+# OpenSSH Server
+- packages/openssh
+
+# Text editor
+- packages/editor
+
+# Bluetooth related services
+- packages/bluez
+
+# Root without password
+- common/wheel-nopasswd
+
+# Reinitialize pacman-key when boot
+- common/pacman-init
