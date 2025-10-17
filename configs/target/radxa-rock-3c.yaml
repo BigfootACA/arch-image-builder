@@ -1,0 +1,21 @@
+name: Radxa ROCK 3C
+target: rock-3c
+arch: aarch64
+firmware:
+  idbloader: /usr/lib/firmware/radxa/rock3c/idbloader.img
+  u-boot: /usr/lib/firmware/radxa/rock3c/u-boot.itb
+  trust: /usr/lib/firmware/radxa/rock3c/trust.img
+fstab:
+  dev: partuuid
+bootloader:
+  timeout: 3
+  method:
+  - systemd-boot
+  - extlinux
+mkinitcpio:
+  no_fallback: yes
++also:
+- device/radxa-rock-3c
+- packages/resize-rootfs
+- target/partitions/rockchip
+- common/default-boot
