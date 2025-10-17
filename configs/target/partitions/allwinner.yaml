@@ -1,0 +1,43 @@
+image:
+- type: disk
+  output: ${firmware.disk_name:sdmmc.img}
+  layout: gpt
+  size: ${firmware.disk_size:2GiB}
+  sector: ${firmware.disk_sector:512}
+  entries_count: 32
+  partitions:
+  # U-Boot and SPL
+  - type: image
+    ptype: bios
+    pname: bootloader
+    start: 8KiB
+    size: 1MiB
+    aligned: no
+    file: ${firmware.uboot-spl:/boot/u-boot-sunxi-with-spl.bin}
+
+  # EFI System Partition, Kernel image, U-Boot Variable
+  - type: filesystem
+    ptype: efi
+    pname: esp
+    size: ${firmware.esp_size:512MiB}
+    fsname: ESP
+    fstype: fat32
+    mount: /boot
+    fstab:
+      flags: rw,noatime,utf8,errors=remount-ro
+
+  # Linux RootFS
+  - type: filesystem
+    ptype: linux-root-${arch}
+    pname: linux
+    fsname: ${distro.identifier.name}
+    fstype: ext4
+    mount: /
+    fstab:
+      boot: yes
+      flags: rw,noatime,discard
+
+mkinitcpio:
+  modules:
+  - fs-vfat
+  - fs-ext4

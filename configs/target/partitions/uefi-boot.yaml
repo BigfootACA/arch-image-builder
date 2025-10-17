@@ -1,0 +1,31 @@
+image:
+- type: disk
+  output: ${firmware.disk_name:disk.img}
+  layout: gpt
+  size: ${firmware.disk_size:2GiB}
+  sector: ${firmware.disk_sector:512}
+  partitions:
+  - type: filesystem
+    ptype: efi
+    pname: esp
+    size: ${firmware.esp_size:256MiB}
+    fsname: ESP
+    fstype: fat32
+    mount: /boot
+    fstab:
+      flags: rw,noatime,utf8,errors=remount-ro
+  - type: filesystem
+    ptype: linux-root-${arch}
+    pname: linux
+    fsname: ${distro.identifier.name}
+    fstype: ext4
+    mount: /
+    grow: yes
+    fstab:
+      boot: yes
+      flags: rw,noatime,discard
+
+mkinitcpio:
+  modules:
+  - fs-vfat
+  - fs-ext4

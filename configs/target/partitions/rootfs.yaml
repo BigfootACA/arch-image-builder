@@ -1,0 +1,12 @@
+image:
+- type: filesystem
+  fsname: ${distro.identifier.name}
+  fstype: ext4
+  mount: /
+  fstab:
+    boot: yes
+    flags: rw,noatime,discard
+
+mkinitcpio:
+  modules:
+  - fs-ext4

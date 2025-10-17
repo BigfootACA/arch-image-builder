@@ -1,0 +1,59 @@
+image:
+- type: disk
+  output: ${firmware.disk_name:sdmmc.img}
+  layout: gpt
+  size: ${firmware.disk_size:2GiB}
+  sector: ${firmware.disk_sector:512}
+  partitions:
+  # Rockchip DDR Initialize and U-Boot SPL
+  - type: image
+    ptype: bios
+    pname: loader
+    start: 32KiB
+    end: 8MiB
+    aligned: no
+    file: ${firmware.idbloader:}
+
+  # U-Boot
+  - type: image
+    ptype: bios
+    pname: uboot
+    start: 8MiB
+    size: 4MiB
+    file: ${firmware.u-boot:}
+
+  # Trust Firmware Image
+  - type: image
+    ptype: bios
+    pname: trust
+    start: 12MiB
+    size: 4MiB
+    file: ${firmware.trust:}
+
+  # EFI System Partition, Kernel image, U-Boot Variable
+  - type: filesystem
+    ptype: efi
+    pname: boot
+    start: 16MiB
+    size: ${firmware.esp_size:256MiB}
+    fsname: ESP
+    fstype: fat32
+    mount: /boot
+    fstab:
+      flags: rw,noatime,utf8,errors=remount-ro
+
+  # Linux RootFS
+  - type: filesystem
+    ptype: linux-root-${arch}
+    pname: root
+    fsname: ${distro.identifier.name}
+    fstype: ext4
+    mount: /
+    fstab:
+      boot: yes
+      flags: rw,noatime,discard
+
+mkinitcpio:
+  modules:
+  - fs-vfat
+  - fs-ext4
