@@ -1,0 +1,21 @@
+name: Radxa ROCK 5B Plus
+target: rock-5b-plus
+arch: aarch64
+firmware:
+  idbloader: /usr/lib/firmware/radxa/rock5b-plus/idbloader.img
+  u-boot: /usr/lib/firmware/radxa/rock5b-plus/u-boot.itb
+  trust: /usr/lib/firmware/radxa/rock5b-plus/trust.img
+fstab:
+  dev: partuuid
+bootloader:
+  timeout: 3
+  method:
+  - systemd-boot
+  - extlinux
+mkinitcpio:
+  no_fallback: yes
++also:
+- device/radxa-rock-5b-plus
+- packages/resize-rootfs
+- target/partitions/rockchip
+- common/default-boot

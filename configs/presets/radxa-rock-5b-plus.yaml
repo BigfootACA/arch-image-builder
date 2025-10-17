@@ -1,0 +1,7 @@
+package:
+  file: ArchLinuxARM-Radxa-ROCK-5B-Plus-${version}.7z
+  configs:
+  - target/radxa-rock-5b-plus
+workflows:
+  auto: yes
+  arch: aarch64

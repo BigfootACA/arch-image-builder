@@ -1,0 +1,43 @@
+name: Radxa ROCK 5B Plus
+device: rock-5b-plus
+
+pacman:
+  install:
+  # Bootloader
+  - uboot-radxa-rock-5b-plus
+
+kernel:
+  cmdline:
+  - panic=30
+  - loglevel=8
+  path: /boot
+
+mkinitcpio:
+  modules:
+  - rk8xx_spi
+  - rk808_regulator
+
+sysconf:
+  chassis: embedded
+
++also:
+- os/archlinuxarm
+- repo/renegade-project
+
+# Rockchip RK3588 related config
+- device/soc/rk3588
+
+# OpenSSH Server
+- packages/openssh
+
+# Text editor
+- packages/editor
+
+# Bluetooth related services
+- packages/bluez
+
+# Root without password
+- common/wheel-nopasswd
+
+# Reinitialize pacman-key when boot
+- common/pacman-init
