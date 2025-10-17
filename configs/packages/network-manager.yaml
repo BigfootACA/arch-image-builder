@@ -5,3 +5,8 @@ systemd:
   enable:
   - NetworkManager.service
   - systemd-resolved.service
+scripts:
+- stage: pre-initramfs
+  chroot: yes
+  code: |
+    rm -fv /etc/systemd/network/20-{ethernet,wlan,wwan}.network
