@@ -1,0 +1,21 @@
+name: LCKFB Taishan Pi
+target: lckfb-tspi
+arch: aarch64
+firmware:
+  idbloader: /usr/lib/firmware/lckfb/tspi/idbloader.img
+  u-boot: /usr/lib/firmware/lckfb/tspi/u-boot.itb
+  trust: /usr/lib/firmware/lckfb/tspi/trust.img
+fstab:
+  dev: partuuid
+bootloader:
+  timeout: 3
+  method:
+  - systemd-boot
+  - extlinux
+mkinitcpio:
+  no_fallback: yes
++also:
+- device/lckfb-tspi
+- packages/resize-rootfs
+- target/partitions/rockchip
+- common/default-boot

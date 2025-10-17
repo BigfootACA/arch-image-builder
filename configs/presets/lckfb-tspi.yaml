@@ -1,0 +1,7 @@
+package:
+  file: ArchLinuxARM-LCKFB-TaishanPi-${version}.7z
+  configs:
+  - target/lckfb-tspi
+workflows:
+  auto: no
+  arch: aarch64

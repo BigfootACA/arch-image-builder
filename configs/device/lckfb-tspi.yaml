@@ -1,0 +1,52 @@
+name: LCKFB Taishan Pi
+device: lckfb-tspi
+
+pacman:
+  install:
+  # Bootloader
+  - uboot-lckfb-tspi
+
+kernel:
+  cmdline:
+  - panic=30
+  - loglevel=8
+  path: /boot
+
+mkinitcpio:
+  modules:
+  - rk8xx_i2c
+  - rk808_regulator
+
+sysconf:
+  chassis: embedded
+
++also:
+- os/archlinuxarm
+- repo/renegade-project
+
+# Rockchip RK3566 related config
+- device/soc/rk3566
+
+# USB Gadget tools
+- packages/systemd-gadget
+
+# Network Daemon
+- packages/systemd-networkd
+
+# Android Debug Bridge Daemon via USB Gadget
+- packages/adbd
+
+# OpenSSH Server
+- packages/openssh
+
+# Text editor
+- packages/editor
+
+# Bluetooth related services
+- packages/bluez
+
+# Root without password
+- common/wheel-nopasswd
+
+# Reinitialize pacman-key when boot
+- common/pacman-init
