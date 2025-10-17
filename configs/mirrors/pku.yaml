@@ -1,0 +1,16 @@
+mirrors:
+- name: pku
+  repos:
+  # ArchLinux
+  - original: https://geo.mirror.pkgbuild.com/
+    mirror: https://mirror.nju.edu.cn/archlinux/
+
+  # ArchLinux CN
+  - name: archlinuxcn
+    original: https://repo.archlinuxcn.org/
+    mirror: https://mirror.nju.edu.cn/archlinuxcn/
+
+  # ArchRiscV
+  - name: archriscv
+    original: https://archriscv.felixc.at/
+    mirror: https://mirror.nju.edu.cn/archriscv/
