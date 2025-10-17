@@ -4,8 +4,10 @@ log = getLogger(__name__)
 
 
 class SubScriptValue:
+	token: str = None
 	content: str = None
 	original: str = None
+	default: str = None
 	incomplete: bool = False
 
 	def __str__(self): return self.content
@@ -14,10 +16,11 @@ class SubScriptValue:
 
 def dict_get(key: str, root: dict):
 	def get_token(node, k):
+		if node is None: return None
 		nt = type(node)
-		if nt is list: return node[int(k)]
-		elif nt is tuple: return node[int(k)]
-		elif nt is dict: return node[k]
+		if nt is list: return node.get(int(k), None)
+		elif nt is tuple: return node.get(int(k), None)
+		elif nt is dict: return node.get(k, None)
 		else: raise KeyError(f"unsupported get in {nt.__name__}")
 	keys = ["[", "."]
 	node = root
@@ -59,6 +62,13 @@ class SubScript:
 		if token[0] == "@":
 			token = token[1:]
 			lstr = True
+		if ":" in token:
+			bval = token.split(":")
+			if len(bval) != 2:
+				raise ValueError(f"invalid token {token}")
+			token = bval[0]
+			val.default = bval[1]
+		val.token = token
 		if token not in self.unresolved:
 			self.unresolved.append(token)
 		value = dict_get(token, self.root)
@@ -73,7 +83,7 @@ class SubScript:
 		val.content = value
 		return val
 
-	def process(self, content: str, lvl: str) -> SubScriptValue:
+	def process(self, content: str, lvl: str, use_def: bool) -> SubScriptValue:
 		last = 0
 		ret = SubScriptValue()
 		ret.original = content
@@ -92,23 +102,28 @@ class SubScript:
 			token = content[last + 2: tp]
 			val = self.resolve_token(token)
 			if val.incomplete:
-				ret.incomplete = True
-				return ret
-			value = val.content
+				if use_def and val.default is not None:
+					value = val.default
+				else:
+					ret.incomplete = True
+					return ret
+			else:
+				value = val.content
+			value = str(value)
 			content = content[:last] + value + content[tp + 1:]
 			last += len(value)
 		ret.content = content
 		return ret
 
-	def parse_rec(self, node: dict | list, level: str) -> bool:
+	def parse_rec(self, node: dict | list, level: str, use_def: bool=False) -> bool:
 		def process_one(key, lvl):
 			value = node[key]
 			vt = type(value)
 			if vt is dict or vt is list:
-				if not self.parse_rec(value, lvl):
+				if not self.parse_rec(value, lvl, use_def):
 					return False
 			elif vt is str:
-				val = self.process(value, lvl)
+				val = self.process(value, lvl, use_def)
 				if val.incomplete:
 					return False
 				node[key] = val.content
@@ -136,13 +151,20 @@ class SubScript:
 
 	def parse(self, root: dict):
 		self.root = root
+		use_def = False
 		while True:
 			self.count = 0
-			ret = self.parse_rec(root, "")
+			ret = self.parse_rec(root, "", use_def)
 			if ret: break
-			if self.count <= 0:
-				self.dump_unresolved()
-				raise ValueError("some value cannot be resolved")
+			if self.count > 0:
+				continue
+			if len(self.unresolved) == 0:
+				break
+			if not use_def:
+				use_def = True
+				continue
+			self.dump_unresolved()
+			raise ValueError("some value cannot be resolved")
 		self.dump_unresolved()
 
 	def __init__(self):
