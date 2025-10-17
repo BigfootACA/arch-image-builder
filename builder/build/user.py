@@ -94,20 +94,32 @@ def proc_group(ctx: ArchBuilderContext, cfg: dict):
 	log.info(f"{action} group {name}")
 
 
+def proc_item(ctx: ArchBuilderContext, t: str, func: callable):
+	items = ctx.get("sysconf." + t, [])
+	if type(items) is dict:
+		for item in items:
+			if "name" not in items[item]:
+				continue
+			func(ctx, items[item])
+	elif type(items) is list:
+		for item in items:
+			func(ctx, item)
+	else:
+		raise ArchBuilderConfigError(f"invalid sysconf.{t} type")
+
+
 def proc_users(ctx: ArchBuilderContext):
 	"""
 	Create all users
 	"""
-	for user in ctx.get("sysconf.user", []):
-		proc_user(ctx, user)
+	proc_item(ctx, "user", proc_user)
 
 
 def proc_groups(ctx: ArchBuilderContext):
 	"""
 	Create all groups
 	"""
-	for group in ctx.get("sysconf.group", []):
-		proc_group(ctx, group)
+	proc_item(ctx, "group", proc_group)
 
 
 def proc_usergroup(ctx: ArchBuilderContext):
