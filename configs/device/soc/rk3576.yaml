@@ -1,0 +1,28 @@
+arch: aarch64
+soc: rk3576
+
+kernel:
+  cmdline:
+  - earlycon=uart8250,mmio32,0x2ad40000
+  - console=uart8250,mmio32,0x2ad40000,1500000n8
+
+  # Always want devicetree
+  devicetree: dtbs/${platform}/${soc}-${device}.dtb
+
+mkinitcpio:
+  modules:
+  # Modules for Rockchip RK3576
+  - clk_scmi
+  - nvmem_rockchip_otp
+  - phy_rockchip_inno_usb2
+  - phy_rockchip_naneng_combphy
+  - phy_rockchip_samsung_hdptx
+  - phy_rockchip_usbdp
+  - scmi_module
+  - scmi_regulator
+  - scmi_transport_smc
+  - spi_rockchip_sfc
+
++also:
+# Generic Rockchip RK3XXX related config
+- device/platform/rk3xxx

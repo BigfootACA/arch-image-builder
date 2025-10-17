@@ -1,0 +1,15 @@
+arch: aarch64
+soc: sun50i-a64
+
+mkinitcpio:
+  # Modules for Allwinner A64
+  modules:
+  - musb-hdrc
+  - sunxi-wdt
+
++also:
+# Generic allwinner related config
+- device/vendor/allwinner
+
+# Universal Mainline Kernel
+- packages/linux-mainline-aarch64

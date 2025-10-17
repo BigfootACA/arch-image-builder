@@ -20,7 +20,7 @@ sysconf:
 - repo/renegade-project
 
 # Allwinner H616 related config
-- device/sun50i-h616
+- device/soc/sun50i-h616
 
 # USB Gadget tools
 - packages/systemd-gadget

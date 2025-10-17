@@ -1,0 +1,8 @@
+arch: aarch64
+
++also:
+# Generic allwinner related config
+- device/vendor/allwinner
+
+# Universal Mainline Kernel
+- packages/linux-mainline-aarch64

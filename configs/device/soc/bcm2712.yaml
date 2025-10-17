@@ -1,0 +1,11 @@
+## Devices:
+##  Raspbberry Pi 5B
+##  Raspbberry Pi 500
+##  Raspbberry Pi CM5
+
+arch: aarch64
+soc: bcm2712
+
++also:
+# Generic Broadcom BCM2835 related config
+- device/platform/bcm2835

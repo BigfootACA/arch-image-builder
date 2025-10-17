@@ -1,0 +1,31 @@
+arch: aarch64
+soc: rk3568
+
+kernel:
+  cmdline:
+  - earlycon=uart8250,mmio32,0xfe660000
+  - console=uart8250,mmio32,0xfe660000,1500000n8
+
+  # Always want devicetree
+  devicetree: dtbs/${platform}/${soc}-${device}.dtb
+
+mkinitcpio:
+  modules:
+  # Modules for Rockchip RK3568
+  - clk_rk808
+  - clk_scmi
+  - phy_rockchip_inno_usb2
+  - phy_rockchip_naneng_combphy
+  - pl330
+  - rk805_pwrkey
+  - rk808_regulator
+  - rk817_charger
+  - rk8xx_i2c
+  - rtc_rk808
+  - scmi_module
+  - scmi_transport_smc
+  - sdhci_of_dwcmshc
+
++also:
+# Generic Rockchip RK3XXX related config
+- device/platform/rk3xxx

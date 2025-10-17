@@ -1,0 +1,5 @@
+arch: aarch64
+soc: rk3582
+
++also:
+- device/soc/rk3588

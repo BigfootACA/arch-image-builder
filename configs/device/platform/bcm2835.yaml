@@ -1,0 +1,20 @@
+arch: aarch64
+
+pacman:
+  install:
+  # For regulatory.db
+  - wireless-regdb
+
+  # Kernel for Raspberry Pi
+  - linux-rpi
+
+  # For kernel modules
+  - mkinitcpio
+
+kernel:
+  kernel: kernel8.img
+  initramfs: initramfs-linux.img
+
++also:
+# Generic broadcom related config
+- device/vendor/broadcom

@@ -2,10 +2,6 @@ platform: allwinner
 device_suffix:
 
 kernel:
-  cmdline:
-  - clk_ignore_unused
-  - pd_ignore_unused
-
   # Always want devicetree
   devicetree: dtbs/${platform}/${soc}-${device}.dtb
 

@@ -1,0 +1,14 @@
+## Devices:
+##  Raspbberry Pi 2B
+##  Raspbberry Pi 3B
+##  Raspbberry Pi 3B Plus
+##  Raspbberry Pi CM3
+##  Raspbberry Pi Zero 2
+##  Raspbberry Pi Zero 2W
+
+arch: aarch64
+soc: bcm2710
+
++also:
+# Generic Broadcom BCM2835 related config
+- device/platform/bcm2835

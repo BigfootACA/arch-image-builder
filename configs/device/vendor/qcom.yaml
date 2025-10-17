@@ -1,5 +1,6 @@
 platform: qcom
 device_suffix:
+
 pacman:
   install:
   # Android A/B Slot Switcher
@@ -16,6 +17,7 @@ pacman:
 
   # Protection Domain Mapper
   - pd-mapper
+
 systemd:
   enable:
   - rmtfs.service

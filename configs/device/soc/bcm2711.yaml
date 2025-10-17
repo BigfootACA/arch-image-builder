@@ -1,0 +1,11 @@
+## Devices:
+##  Raspbberry Pi 4B
+##  Raspbberry Pi 400
+##  Raspbberry Pi CM4
+
+arch: aarch64
+soc: bcm2711
+
++also:
+# Generic Broadcom BCM2835 related config
+- device/platform/bcm2835

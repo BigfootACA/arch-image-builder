@@ -38,7 +38,7 @@ mkinitcpio:
 
 +also:
 # Generic allwinner related config
-- device/allwinner
+- device/vendor/allwinner
 
 # Universal Mainline Kernel
 - packages/linux-mainline-aarch64

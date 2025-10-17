@@ -178,7 +178,7 @@ mkinitcpio:
 - repo/renegade-project
 
 # Generic qualcomm related config
-- device/qcom
+- device/vendor/qcom
 
 # USB Gadget tools
 - packages/systemd-gadget

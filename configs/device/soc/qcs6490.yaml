@@ -1,0 +1,74 @@
+arch: aarch64
+soc: qcs6490
+
+kernel:
+  cmdline:
+  - console=ttyMSM0
+  - earlycon=qcom_geni,0x994000
+
+  # Always want devicetree
+  devicetree: dtbs/${platform}/${soc}-${device}.dtb
+
+mkinitcpio:
+  modules:
+  # Modules for Qualcomm QCS6490
+  - bam_dma
+  - camcc_sc7280
+  - dispcc_sc7280
+  - dwc3
+  - dwc3_qcom
+  - dwc3_qcom_legacy
+  - gpi
+  - gpucc_sc7280
+  - i2c_qcom_geni
+  - nvmem_qcom_spmi_sdam
+  - nvmem_qfprom
+  - nvmem_reboot_mode
+  - phy_qcom_qmp_combo
+  - phy_qcom_qmp_pcie
+  - phy_qcom_qmp_ufs
+  - phy_qcom_snps_femto_v2
+  - pinctrl_sc7280_lpass_lpi
+  - pinctrl_spmi_gpio
+  - pm8941_pwrkey
+  - q6apm_dai
+  - q6apm_lpass_dais
+  - q6prm
+  - q6prm_clocks
+  - qcom_cpufreq_hw
+  - qcom_hwspinlock
+  - qcom_pon
+  - qcom_rng
+  - qcom_rpmh_regulator
+  - qcom_spmi_adc5
+  - qcom_spmi_adc_tm5
+  - qcom_spmi_pmic
+  - qcom_spmi_temp_alarm
+  - qcom_tsens
+  - qcom_wdt
+  - qcrypto
+  - reset_qcom_aoss
+  - reset_qcom_pdc
+  - sdhci_msm
+  - spi_geni_qcom
+  - spi_nor
+  - spi_qcom_qspi
+  - spmi_pmic_arb
+  - ufs_qcom
+  - videocc_sc7280
+  - xhci_hcd
+  - xhci_plat_hcd
+  files:
+  - /usr/lib/firmware/qcom/qcm6490/qupv3fw.elf
+
+systemd:
+  disable:
+  # No modem in this SoC
+  - rmtfs.service
+
++also:
+# Generic qualcomm related config
+- device/vendor/qcom
+
+# Universal Mainline Kernel
+- packages/linux-mainline-aarch64

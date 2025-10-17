@@ -1,0 +1,5 @@
+arch: aarch64
+soc: sun55i-a527
+
++also:
+- device/soc/sun55i-a523

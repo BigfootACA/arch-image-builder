@@ -1,0 +1,6 @@
++also:
+# Generic rockchip related config
+- device/vendor/rockchip
+
+# Universal Mainline Kernel
+- packages/linux-mainline-aarch64

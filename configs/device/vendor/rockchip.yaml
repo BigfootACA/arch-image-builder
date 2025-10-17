@@ -1,0 +1,37 @@
+platform: rockchip
+device_suffix:
+
+kernel:
+  # Always want devicetree
+  devicetree: dtbs/${platform}/${soc}-${device}.dtb
+
+filesystem:
+  files:
+  - path: /etc/systemd/system.conf.d/rk-wdt.conf
+    stage: pre-user
+    content: |
+      [Manager]
+      WatchdogDevice=/dev/watchdog0
+      RuntimeWatchdogSec=30s
+      RebootWatchdogSec=30s
+      KExecWatchdogSec=30s
+
+mkinitcpio:
+  modules:
+  # Modules for Rockchip
+  - ahci_dwc
+  - cpufreq_dt
+  - dwc3
+  - dw_mmc_rockchip
+  - dw_wdt
+  - fan53555
+  - gpio_rockchip
+  - i2c_rk3x
+  - pwm_rockchip
+  - reset_gpio
+  - rockchipdrm
+  - rockchip_dfi
+  - rockchip_saradc
+  - rockchip_thermal
+  - sdhci_of_dwcmshc
+  - syscon_reboot_mode

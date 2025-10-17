@@ -1,0 +1,12 @@
+arch: aarch64
+soc: sun55i-a523
+
+mkinitcpio:
+  # Modules for Allwinner A523
+  modules:
+  - musb-hdrc
+  - sunxi-wdt
+
++also:
+# Allwinner SUN55I Platform
+- device/platform/sun55i

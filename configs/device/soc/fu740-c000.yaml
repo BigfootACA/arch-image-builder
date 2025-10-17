@@ -1,0 +1,13 @@
+arch: riscv64
+soc: fu740-c000
+
+mkinitcpio:
+  modules:
+  # Modules for SiFive FU740-C000
+  - pwm-sifive
+  - spi-sifive
+  - i2c-ocores
+
++also:
+# Generic SiFive related config
+- device/vendor/sifive

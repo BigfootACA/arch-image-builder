@@ -1,0 +1,32 @@
+arch: aarch64
+soc: rk3588
+
+kernel:
+  cmdline:
+  - earlycon=uart8250,mmio32,0xfeb50000
+  - console=uart8250,mmio32,0xfeb50000,1500000n8
+  
+
+  # Always want devicetree
+  devicetree: dtbs/${platform}/${soc}-${device}.dtb
+
+mkinitcpio:
+  modules:
+  # Modules for Rockchip RK3588
+  - analogix_dp
+  - clk_scmi
+  - dw_hdmi
+  - dw_hdmi_qp
+  - dw_mipi_dsi
+  - dw_mipi_dsi2
+  - phy_rockchip_inno_usb2
+  - phy_rockchip_naneng_combphy
+  - pl330
+  - pwm_rockchip
+  - scmi_module
+  - scmi_transport_smc
+  - sdhci_of_dwcmshc
+
++also:
+# Generic Rockchip RK3XXX related config
+- device/platform/rk3xxx

@@ -1,0 +1,21 @@
+arch: aarch64
+soc: rk3399
+
+kernel:
+  cmdline:
+  - earlycon=uart8250,mmio32,0xff1a0000
+  - console=uart8250,mmio32,0xff1a0000,1500000n8
+
+  # Always want devicetree
+  devicetree: dtbs/${platform}/${soc}-${device}.dtb
+
+mkinitcpio:
+  modules:
+  # Modules for Rockchip RK3399
+  - scmi_module
+  - scmi_transport_smc
+  - sdhci_of_dwcmshc
+
++also:
+# Generic Rockchip RK3XXX related config
+- device/platform/rk3Xxx
