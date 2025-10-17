@@ -10,8 +10,9 @@ class ImageFileBuilder(ImageContentBuilder):
 		cmds = ["dd"]
 		ctx = self.builder.ctx
 		cfg = self.builder.config
-		if "file" not in cfg:
-			raise ArchBuilderConfigError("file not set")
+		if "file" not in cfg or not cfg["file"]:
+			log.info("skip write image file")
+			return
 		file: str = cfg["file"]
 		if file.startswith("/"): file = file[1:]
 		path = os.path.join(ctx.get_rootfs(), file)
