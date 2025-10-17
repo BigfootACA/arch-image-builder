@@ -1,5 +1,5 @@
 name: AYN Odin 2 in SD Card
-target: ${device}-sdcard
+target: ayn-odin2-sdcard
 arch: aarch64
 pacman:
   install:
@@ -24,7 +24,7 @@ image:
   - type: filesystem
     ptype: linux-root-arm64
     pname: linux
-    fsname: ArchLinuxARM
+    fsname: ${distro.identifier.name}
     fstype: ext4
     mount: /
     grow: yes
@@ -41,15 +41,6 @@ bootloader:
   timeout: 3
   method:
   - grub
-  items:
-  - type: linux
-    default: yes
-    name: Arch Linux ARM for AYN Odin 2
-    path: ${kernel.path}
-    kernel: /${kernel.kernel}
-    initramfs: /${kernel.initramfs}
-    devicetree: /${kernel.devicetree}
-    cmdline: ${@kernel.cmdline} ro quiet splash
 filesystem:
   files:
     - path: /boot/LinuxLoader.cfg
@@ -70,3 +61,4 @@ filesystem:
         cmdline = "${@kernel.cmdline}"
 +also:
 - device/ayn-odin2
+- common/default-boot

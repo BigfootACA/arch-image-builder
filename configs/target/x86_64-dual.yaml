@@ -7,36 +7,6 @@ pacman:
   - amd-ucode
   - intel-ucode
   - efibootmgr
-image:
-- type: disk
-  output: disk.img
-  layout: gpt
-  size: 2GiB
-  sector: 512
-  partitions:
-  - ptype: bios
-    pname: bios
-    size: 4MiB
-  - type: filesystem
-    ptype: efi
-    pname: esp
-    size: 4MiB
-    fsname: ESP
-    fstype: fat12
-    mount: /boot/efi
-    fstab:
-      flags: rw,noatime,utf8,errors=remount-ro
-  - type: filesystem
-    ptype: linux-root-x86-64
-    pname: linux
-    fsname: ArchLinux
-    fstype: ext4
-    mount: /
-    grow: yes
-    fstab:
-      boot: yes
-      flags: rw,noatime,discard
-    grow: yes
 fstab:
   dev: partlabel
 kernel:
@@ -70,3 +40,4 @@ bootloader:
     cmdline: ${@kernel.cmdline} rw loglevel=7
 +also:
 - device/x86_64
+- target/partitions/dual-x86

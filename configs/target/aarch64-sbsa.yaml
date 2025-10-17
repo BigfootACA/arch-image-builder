@@ -5,33 +5,7 @@ pacman:
   install:
   - efibootmgr
   - grub
-
-image:
-- type: disk
-  output: disk.img
-  layout: gpt
-  size: 2GiB
-  sector: 512
-  partitions:
-  - type: filesystem
-    ptype: efi
-    pname: esp
-    size: 4MiB
-    fsname: ESP
-    fstype: fat12
-    mount: /boot/efi
-    fstab:
-      flags: rw,noatime,utf8,errors=remount-ro
-  - type: filesystem
-    ptype: linux-root-arm64
-    pname: linux
-    fsname: ArchLinux
-    fstype: ext4
-    mount: /
-    grow: yes
-    fstab:
-      boot: yes
-      flags: rw,noatime,discard
+  - gcc-libs
 
 grub:
   path: /boot/grub
@@ -48,13 +22,13 @@ bootloader:
   items:
   - type: linux
     default: yes
-    name: Arch Linux ARM
+    name: ${distro.name}
     path: /
     kernel: /boot/${kernel.kernel}
     initramfs: /boot/${kernel.initramfs}
     cmdline: ${@kernel.cmdline} ro quiet splash
   - type: linux
-    name: Arch Linux ARM Fallback
+    name: ${distro.name} Fallback
     path: /
     kernel: /boot/${kernel.kernel}
     initramfs: /boot/initramfs-linux-mainline-aarch64-fallback.img
@@ -62,3 +36,4 @@ bootloader:
 
 +also:
 - device/aarch64-sbsa
+- target/partitions/uefi-boot

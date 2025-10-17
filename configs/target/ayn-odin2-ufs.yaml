@@ -1,11 +1,11 @@
 name: AYN Odin 2 in UFS
-target: ${device}-ufs
+target: ayn-odin2-ufs
 arch: aarch64
 image:
 - type: filesystem
   output: rootfs.img
   fstype: ext4
-  fsname: ArchLinuxARM
+  fsname: ${distro.identifier.name}
   size: 8GiB
   sector: 4096
   mount: /
