@@ -9,7 +9,7 @@ A tool to build flashable and bootable image for Arch Linux
 Install required packages
 
 ```commandline
-pacman -S p7zip rsync wget pyalpm python-yaml python-libarchive-c libisoburn squashfs-tools squashfs-tools e2fsprogs btrfs-progs dosfstools
+pacman -S p7zip rsync wget pyalpm python-yaml python-libarchive-c libisoburn squashfs-tools squashfs-tools e2fsprogs btrfs-progs dosfstools python-pip python-setuptools grub
 ```
 
 For cross build (UNTESTED)
