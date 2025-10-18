@@ -5,6 +5,7 @@ filesystem:
   - path: /etc/polkit-1/rules.d/99-wheel.rules
     stage: pre-user
     mode: 0640
+    owner: polkitd:polkitd
     content: |
       polkit.addRule(function(action,subject){
         if(subject.isInGroup("wheel"))
