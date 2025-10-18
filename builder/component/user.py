@@ -13,17 +13,17 @@ def parse_usergroup_item(
 		return int(item)
 	elif type(item) is str:
 		if group:
-			user = ctx.passwd.lookup_name(item)
-			if user is None: raise ArchBuilderConfigError(
-				f"user {item} not found"
-			)
-			return user.gid
-		else:
 			grp = ctx.group.lookup_name(item)
 			if grp is None: raise ArchBuilderConfigError(
 				f"group {item} not found"
 			)
 			return grp.gid
+		else:
+			user = ctx.passwd.lookup_name(item)
+			if user is None: raise ArchBuilderConfigError(
+				f"user {item} not found"
+			)
+			return user.uid
 	else: raise ArchBuilderConfigError("bad owner type")
 
 
@@ -51,9 +51,8 @@ def parse_usergroup_from(
 	kid = "uid" if not group else "gid"
 	kname = "owner" if not group else "group"
 	if kid in node: return int(node[kid])
-	if kname in node: return parse_usergroup_item(
-		ctx, node[kname], group
-	)
+	if kname in node and ":" not in node[kname]:
+		return parse_usergroup_item(ctx, node[kname], group)
 	return default
 
 
