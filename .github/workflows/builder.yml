@@ -26,6 +26,7 @@ jobs:
     needs: prepare-matrix
     runs-on: ${{ matrix.runner }}
     strategy:
+      max-parallel: 4
       matrix:
         include:
           ${{ fromJson(needs.prepare-matrix.outputs.presets) }}
