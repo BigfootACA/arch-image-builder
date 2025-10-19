@@ -116,7 +116,11 @@ def add_file(ctx: ArchBuilderContext, file: dict):
 		raise ArchBuilderConfigError(f"no content, source or url set in file")
 	path: str = file["path"]
 	if path.startswith("/"): path = path[1:]
-	uid, gid = user.parse_user_from(ctx, file)
+	try:
+		uid, gid = user.parse_user_from(ctx, file)
+	except ArchBuilderConfigError as e:
+		log.warning(f"skip user parsing for file {file['path']}: {e}")
+		uid, gid = 0, -1
 
 	# file encoding. default to UTF-8
 	encode = file["encode"] if "encode" in file else "utf-8"
